@@ -519,3 +519,22 @@ void DrawPlayerInfo() {
 void DrawEntities() {
 
 }
+//void test() {
+//    initgraph(200, 200);
+//    setbkcolor(WHITE);
+//    int x;
+//	DWORD startTime = GetTickCount();
+//    while (true)
+//    {
+//        DWORD currentTime = GetTickCount();
+//        if (currentTime - startTime >= 1000 / FPS) // ¿ØÖÆÖ¡ÂÊ
+//        {
+//            cleardevice();
+//            circle(x, 100, 50);
+//            x += 5;
+//           
+//            startTime = currentTime;
+//		}
+//		
+//    }
+//}
