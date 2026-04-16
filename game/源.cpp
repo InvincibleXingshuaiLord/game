@@ -1,3 +1,4 @@
+//01–««Ú≈£±∆
 #include <graphics.h>
 #include <iostream>
 #include <vector>
