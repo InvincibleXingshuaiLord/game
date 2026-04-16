@@ -519,7 +519,8 @@ void DrawPlayerInfo() {
 void DrawEntities() {
 
 }
-//void test() {
+//»æÖÆÒ»Ö¡Âß¼­
+// void test() {
 //    initgraph(200, 200);
 //    setbkcolor(WHITE);
 //    int x;
