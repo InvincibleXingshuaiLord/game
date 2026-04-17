@@ -4,9 +4,10 @@
 #include <vector>
 #include <ctime>
 #include <cstdio>
-#include<cmath>
-#define WIN_WIDTH        800
-#define WIN_HEIGHT       600
+#include <windows.h>
+
+#define WIN_WIDTH        1000
+#define WIN_HEIGHT       800
 
 //获取全局消息
 ExMessage msg = { 0 };
@@ -17,7 +18,7 @@ ExMessage msg = { 0 };
 
 //玩家初始属性
 #define PLAYER_INIT_HP   100
-#define PLAYER_INIT_ATK  10
+#define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
 #define PLAYER_SPEED     4
 #define BULLET_SPEED     8
@@ -27,10 +28,10 @@ ExMessage msg = { 0 };
 #define EXP_PER_LEVEL    20
 
 //每隔多少级生成一次小BOSS
-#define MINI_BOSS_LV     10
+#define MINI_BOSS_LV     5
 
 //多少级生成大BOSS
-#define FINAL_BOSS_LV    30
+#define FINAL_BOSS_LV    20
 
 //玩家受伤后无敌帧（毫秒）
 #define INVINCIBLE_TIME  800
@@ -550,3 +551,23 @@ void DrawPlayerInfo() {
 void DrawEntities() {
 
 }
+//绘制一帧逻辑
+// void test() {
+//    initgraph(200, 200);
+//    setbkcolor(WHITE);
+//    int x;
+//	DWORD startTime = GetTickCount();
+//    while (true)
+//    {
+//        DWORD currentTime = GetTickCount();
+//        if (currentTime - startTime >= 1000 / FPS) // 控制帧率
+//        {
+//            cleardevice();
+//            circle(x, 100, 50);
+//            x += 5;
+//           
+//            startTime = currentTime;
+//		}
+//		
+//    }
+//}
