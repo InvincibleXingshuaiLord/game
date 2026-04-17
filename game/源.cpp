@@ -9,6 +9,10 @@
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       800
 
+//获取全局消息
+ExMessage msg = { 0 };
+
+
 //游戏帧率
 #define FPS              60
 
@@ -378,18 +382,46 @@ void Player::LevelUp() {
 }
 
 Bullet::Bullet() {
-
+    this->x = -100;
+    this->y = -100;
+    this->w = 10;
+    this->h = 10;
+    this->speed = 8;
+    this->atk = 1;
+    this->active = false;
 }
 
 void Bullet::Init(int px, int py) {
-
+    this->x = px, this->y = py;//更新子弹坐标
+    
+    this->active = true;
 }
 
-void Bullet::Move() {
-
+void Bullet::Move() { 
+    int mx, my, dx, dy;
+    double vx, vy, t, s;
+    while (true) {
+        if (peekmessage(&msg, EX_MOUSE )) {};//获取鼠标消息
+        if (msg.message == WM_LBUTTONDOWN) {//左键按下
+            mx = msg.x, my = msg.y;
+            dx = mx - this->x, dy = my - this->y;
+            s = sqrt(dx * dx + dy * dy);
+            t = double(s / this->speed);
+            vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
+            this->x += vx; this->y += vy;//更新子弹坐标
+        }
+        
+    }
 }
 
 bool Bullet::CheckBorder() {
+    if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
+    if (this->x + this->w <= 0 || this->x >= getwidth() || this->y + h <= 0 || this->y >= getheight())
+     //如果整个图片出界，返回真
+    {
+        this->active = false;//同时改变子弹的存在状态
+        return true;
+    }
     return false;
 }
 
