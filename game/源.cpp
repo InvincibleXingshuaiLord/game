@@ -138,6 +138,7 @@ public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
+	void ShootMonsterBullet();//怪物攻击，发射子弹
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
@@ -404,6 +405,9 @@ void Monster::TrackPlayer(Player& player) {
 
 }
 
+void Monster::ShootMonsterBullet() {
+    
+}
 void Monster::TakeDamage(int dmg) {
 
 }
