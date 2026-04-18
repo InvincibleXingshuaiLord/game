@@ -442,7 +442,7 @@ Monster::Monster() {
     w = 64;//需要到时候再改
     h = 64;//同上
     hp = 100;
-    maxhp = 100;
+    maxHp = 100;
     speed = 2;
     expDrop = 10;
     score = 10;
