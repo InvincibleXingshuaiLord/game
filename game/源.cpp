@@ -7,7 +7,7 @@
 #include <windows.h>
 #include<cmath>
 #define WIN_WIDTH        1000
-#define WIN_HEIGHT       800
+#define WIN_HEIGHT       700
 
 //获取全局消息
 ExMessage msg = { 0 };
@@ -308,7 +308,7 @@ void DrawEntities();
 
 //对象定义区
 
-
+functionalshape()
 
 
 int main()
@@ -513,8 +513,41 @@ void DrawButton(Button& btn, const char* text) {
 
 }
 
+void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
+    setfillcolor(0X000000);
+    solidrectangle(rx, ry, rx + rw, ry + rh);
+    setbkmode(TRANSPARENT);
+    settextstyle(30, 10, "微软雅黑");
+    settextcolor(0XFFFFFF);
+    outtextxy(rx + (rw - textwidth(s.c_str())) / 2, ry + (rh - textheight(s.c_str())) / 2, s.c_str());
+}
 void DrawStartUI() {
 
+    initgraph(1000, 700);
+
+    IMAGE img;
+    loadimage(&img, "photo/kk1.jpg", 1100, 700);
+    putimage(0, 0, &img);
+
+    int rx, ry[5], rh, rw, i;
+    rx = 600;
+    ry[0] = 280;
+    rw = 130;
+    rh = 50;
+    for (i = 1; i < 5; i++) {
+        ry[i] = ry[i - 1] + rh + 10;
+    }
+    functionalshape(rx, ry[0], rw, rh, "开始游戏");
+    functionalshape(rx, ry[1], rw, rh, "玩法介绍");
+    functionalshape(rx, ry[2], rw, rh, "团队介绍");
+    functionalshape(rx, ry[3], rw, rh, "游戏设置");
+    functionalshape(rx, ry[4], rw, rh, "退出游戏");
+    setbkmode(TRANSPARENT);
+    settextstyle(50, 30, "隶书");
+    settextcolor(0X000000);
+    char s[50] = "追上我把命都给你！";
+    outtextxy((1000 - textwidth(s)) / 2, 30, s);
+    getchar();
 }
 
 void DrawHelpUI() {
