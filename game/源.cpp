@@ -470,15 +470,49 @@ void GameUpdate() {
 
 void SpawnMonster() {
 
+    Monster monster;
+    monster.RandomSpawn();         // 随机位置和尺寸
+    monster.type = MONSTER;
+    monster.active = true;
 
+    monster.maxHp = 5;             // 血量5点
+    monster.hp = monster.maxHp;
+    monster.speed = MONSTER_SPEED;
+    monster.expDrop = 5;           // 掉落经验
+    monster.score = 10;            // 击杀得分
+
+    g_monsters.push_back(monster);
 }
 
 void SpawnMiniBoss() {
+    Monster miniBoss;
+    miniBoss.RandomSpawn();        // 随机位置和尺寸
+    miniBoss.type = MINI_BOSS;
+    miniBoss.active = true;
 
+    miniBoss.maxHp = 200;          // 血量200点
+    miniBoss.hp = miniBoss.maxHp;
+    miniBoss.speed = MONSTER_SPEED;
+    miniBoss.expDrop = 50;         // 掉落经验
+    miniBoss.score = 200;          // 击杀得分
+
+    g_monsters.push_back(miniBoss);
 }
 
 void SpawnFinalBoss() {
+    Monster finalBoss;
+    finalBoss.RandomSpawn();       // 随机位置和尺寸
+    finalBoss.type = FINAL_BOSS;
+    finalBoss.active = true;
 
+    finalBoss.maxHp = 913;         // 血量913点
+    finalBoss.hp = finalBoss.maxHp;
+    finalBoss.speed = MONSTER_SPEED;
+    finalBoss.expDrop = 500;       // 掉落经验
+    finalBoss.score = 1000;        // 击杀得分
+
+    g_monsters.push_back(finalBoss);
+    g_hasFinalBoss = true;
 }
 
 void UpdateBullets() {
