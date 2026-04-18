@@ -5,16 +5,20 @@
 #include <ctime>
 #include <cstdio>
 #include <windows.h>
+#include<cmath>
+#define WIN_WIDTH        1000
+#define WIN_HEIGHT       800
 
-#define WIN_WIDTH        800
-#define WIN_HEIGHT       600
+//获取全局消息
+ExMessage msg = { 0 };
+
 
 //游戏帧率
 #define FPS              60
 
 //玩家初始属性
 #define PLAYER_INIT_HP   100
-#define PLAYER_INIT_ATK  10
+#define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
 #define PLAYER_SPEED     4
 #define BULLET_SPEED     8
@@ -24,10 +28,10 @@
 #define EXP_PER_LEVEL    20
 
 //每隔多少级生成一次小BOSS
-#define MINI_BOSS_LV     10
+#define MINI_BOSS_LV     5
 
 //多少级生成大BOSS
-#define FINAL_BOSS_LV    30
+#define FINAL_BOSS_LV    20
 
 //玩家受伤后无敌帧（毫秒）
 #define INVINCIBLE_TIME  800
@@ -112,7 +116,8 @@ public:
 public:
     Bullet();           //构造函数
     void Init(int px, int py); //初始化子弹位置
-    void Move();        //子弹移动
+    void P_Move();                      //玩家子弹移动
+    void M_Move(Monster& bigboss);       //大boss子弹移动
     bool CheckBorder(); //检测子弹是否出界，出界则销毁
 };
 
@@ -137,7 +142,8 @@ public:
 public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
-    void TrackPlayer(Player& player); //自动追踪玩家 
+    void TrackPlayer(Player& player); //自动追踪玩家
+    void ShootMonsterBullet();//怪物攻击，发射子弹
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
@@ -377,33 +383,100 @@ void Player::LevelUp() {
 }
 
 Bullet::Bullet() {
-
+    this->x = -100;
+    this->y = -100;
+    this->w = 10;
+    this->h = 10;
+    this->speed = 8;
+    this->atk = 1;
+    this->active = false;
+    g_bullets.resize(0);
 }
 
 void Bullet::Init(int px, int py) {
-
+    this->x = px, this->y = py;//更新子弹初始坐标
+    this->active = true;//更新子弹存在状态
 }
 
-void Bullet::Move() {
+void Bullet::P_Move() {
+    this->atk = g_player.atk;//更新玩家子弹伤害
+    int mx, my, dx, dy;//计算子弹坐标与鼠标坐标的差，让子弹走直线
+    mx = my = dx = dy = 0;
+    double vx, vy, t, s;
+    vx = vy = t = s = 0;
+    while (true) {
+        if (peekmessage(&msg, EX_MOUSE)) {};//获取鼠标消息
+        if (msg.message == WM_LBUTTONDOWN) {//左键按下
+            mx = msg.x, my = msg.y;
+            dx = mx - this->x, dy = my - this->y;
+            s = sqrt(dx * dx + dy * dy);
+            t = double(s / this->speed);
+            vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
+            this->x += vx; this->y += vy;//更新子弹坐标
+        }
 
+    }
+}
+
+void Bullet::M_Move(Monster& bigboss) {
+    this->atk = 100;//初始化怪物子弹伤害
+    bigboss.TrackPlayer(g_player);//子弹追击玩家   
 }
 
 bool Bullet::CheckBorder() {
+    if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
+    if (this->x + this->w <= 0 || this->x >= getwidth() || this->y + h <= 0 || this->y >= getheight())
+        //如果整个图片出界，返回真
+    {
+        this->active = false;//同时改变子弹的存在状态
+        return true;
+    }
     return false;
 }
-
+//静行开始
 Monster::Monster() {
-
+    x = 0;
+    y = 0;
+    w = 64;//需要到时候再改
+    h = 64;//同上
+    hp = 100;
+    maxhp = 100;
+    speed = 2;
+    expDrop = 10;
+    score = 10;
+    active = true;
+    type = EntityType::MONSTER;
 }
 
 void Monster::RandomSpawn() {
+    int posx;
+    int posy;
+    int minx = 0;
+    int miny = 0;
+    int maxx = 100;
+    int maxy = 100;
+    posx = rand() % (maxx - minx + 1) + minx;
+    posy = rand() % (maxy - miny + 1) + miny;
+    x = posx;
+    y = posy;
 
 }
 
 void Monster::TrackPlayer(Player& player) {
+    while (abs(player.x - x) > 1 && abs(player.y - y > 1)) {
+        int dx = player.x - x;
+        int dy = player.y - y;
+        double distance = sqrt(dx * dx + dy * dy);
+        x += (dx / distance) * speed;
+        y += (dy / distance) * speed;
+    }
+}//可优化的点 一开始巡逻 在离玩家距离多少之内然后进行追踪 并且速度是逐渐累加 而不是直接一下加到最大
+
+
+
+void Monster::ShootMonsterBullet() {
 
 }
-
 void Monster::TakeDamage(int dmg) {
 
 }
@@ -411,7 +484,7 @@ void Monster::TakeDamage(int dmg) {
 void Monster::OnDead() {
 
 }
-
+//静行结束
 void GameRes::Load() {
 
 }
@@ -469,7 +542,6 @@ void GameUpdate() {
 }
 
 void SpawnMonster() {
-
     Monster monster;
     monster.RandomSpawn();         // 随机位置和尺寸
     monster.type = MONSTER;
@@ -532,8 +604,8 @@ void Collide_PlayerMonster() {
 }
 
 void CheckLevelUp() {
-
-    while (g_player.exp >= g_player.expNeed) {
+    while (g_player.exp >= g_player.expNeed)
+    {
         g_player.LevelUp();
     }
 }
@@ -557,3 +629,23 @@ void DrawPlayerInfo() {
 void DrawEntities() {
 
 }
+//绘制一帧逻辑
+// void test() {
+//    initgraph(200, 200);
+//    setbkcolor(WHITE);
+//    int x;
+//	DWORD startTime = GetTickCount();
+//    while (true)
+//    {
+//        DWORD currentTime = GetTickCount();
+//        if (currentTime - startTime >= 1000 / FPS) // 控制帧率
+//        {
+//            cleardevice();
+//            circle(x, 100, 50);
+//            x += 5;
+//           
+//            startTime = currentTime;
+//		}
+//		
+//    }
+//}
