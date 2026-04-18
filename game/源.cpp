@@ -5,7 +5,7 @@
 #include <ctime>
 #include <cstdio>
 #include <windows.h>
-
+#include<cmath>
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       800
 
@@ -143,6 +143,7 @@ public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
+	void ShootMonsterBullet();//怪物攻击，发射子弹
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
@@ -432,19 +433,50 @@ bool Bullet::CheckBorder() {
     }
     return false;
 }
-
+//静行开始
 Monster::Monster() {
-
+ x=0;
+ y=0;
+ w=64;//需要到时候再改
+ h=64;//同上
+ hp=100;
+ maxhp=100;
+ speed=2;
+ expDrop=10;
+ score=10;
+ active=true;
+type=EntityType::MONSTER;
 }
 
 void Monster::RandomSpawn() {
-
+  int posx;
+  int posy;
+  int minx = 0;
+  int miny = 0;
+  int maxx = 100;
+  int maxy = 100;
+  posx = rand() % (maxx - minx + 1) + minx;
+  posy= rand() % (maxy - miny + 1) + miny;
+  x = posx;
+  y = posy;
+ 
 }
 
 void Monster::TrackPlayer(Player& player) {
+    while (abs(player.x-x)>1&&abs(player.y-y>1)) {
+        int dx = player.x - x;
+        int dy = player.y - y;
+        double distance = sqrt(dx * dx + dy * dy);
+        x += (dx / distance) * speed;
+        y += (dy / distance) * speed;
+    }
+}//可优化的点 一开始巡逻 在离玩家距离多少之内然后进行追踪 并且速度是逐渐累加 而不是直接一下加到最大
 
+
+
+void Monster::ShootMonsterBullet() {
+    
 }
-
 void Monster::TakeDamage(int dmg) {
 
 }
@@ -452,7 +484,7 @@ void Monster::TakeDamage(int dmg) {
 void Monster::OnDead() {
 
 }
-
+//静行结束
 void GameRes::Load() {
 
 }
