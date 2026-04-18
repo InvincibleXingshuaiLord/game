@@ -207,7 +207,7 @@ int        g_spawnTimer;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
 
-// 开始界面-开始游戏按钮
+// 开始界面-开始游戏按钮(开始界面定义了每个功能图形（正矩形）的坐标变量，可根据坐标编写按钮功能，简单很多)
 Button     btnStart;
 
 // 开始界面-玩法介绍按钮
@@ -308,11 +308,13 @@ void DrawEntities();
 
 //对象定义区
 
-functionalshape()
+//用于开始界面的功能图形绘制
+void functionalshape();
 
 
 int main()
 {
+    DrawStartUI();
     //初始化游戏
     GameInit();
     while (g_isRun)
@@ -512,7 +514,7 @@ bool CheckButtonClick(Button& btn) {
 void DrawButton(Button& btn, const char* text) {
 
 }
-
+//用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
     setfillcolor(0X000000);
     solidrectangle(rx, ry, rx + rw, ry + rh);
@@ -526,7 +528,7 @@ void DrawStartUI() {
     initgraph(1000, 700);
 
     IMAGE img;
-    loadimage(&img, "photo/kk1.jpg", 1100, 700);
+    loadimage(&img, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
     putimage(0, 0, &img);
 
     int rx, ry[5], rh, rw, i;
@@ -537,6 +539,7 @@ void DrawStartUI() {
     for (i = 1; i < 5; i++) {
         ry[i] = ry[i - 1] + rh + 10;
     }
+    //按钮图形绘制
     functionalshape(rx, ry[0], rw, rh, "开始游戏");
     functionalshape(rx, ry[1], rw, rh, "玩法介绍");
     functionalshape(rx, ry[2], rw, rh, "团队介绍");
