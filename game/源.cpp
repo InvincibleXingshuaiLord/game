@@ -315,15 +315,16 @@ void DrawPlayerInfo();
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
-//对象定义区
-
 //用于开始界面的功能图形绘制
 void functionalshape();
 
-
 int main()
 {
-    DrawStartUI();
+    //对象定义区
+
+
+    //对象定义结束
+	srand((unsigned)time(NULL));
     //初始化游戏
     GameInit();
     while (g_isRun)
