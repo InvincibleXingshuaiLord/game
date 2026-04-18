@@ -137,7 +137,7 @@ public:
 public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
-    void TrackPlayer(Player& player); //自动追踪玩家
+    void TrackPlayer(Player& player); //自动追踪玩家 
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
@@ -470,6 +470,7 @@ void GameUpdate() {
 
 void SpawnMonster() {
 
+
 }
 
 void SpawnMiniBoss() {
@@ -498,6 +499,9 @@ void Collide_PlayerMonster() {
 
 void CheckLevelUp() {
 
+    while (g_player.exp >= g_player.expNeed) {
+        g_player.LevelUp();
+    }
 }
 
 void UpdateInvincible() {
@@ -519,22 +523,3 @@ void DrawPlayerInfo() {
 void DrawEntities() {
 
 }
-//void test() {
-//    initgraph(200, 200);
-//    setbkcolor(WHITE);
-//    int x;
-//	DWORD startTime = GetTickCount();
-//    while (true)
-//    {
-//        DWORD currentTime = GetTickCount();
-//        if (currentTime - startTime >= 1000 / FPS) // 控制帧率
-//        {
-//            cleardevice();
-//            circle(x, 100, 50);
-//            x += 5;
-//           
-//            startTime = currentTime;
-//		}
-//		
-//    }
-//}
