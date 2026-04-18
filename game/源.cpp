@@ -440,7 +440,17 @@ type=EntityType::MONSTER;
 }
 
 void Monster::RandomSpawn() {
-
+  int posx;
+  int posy;
+  int minx = 0;
+  int miny = 0;
+  int maxx = 100;
+  int maxy = 100;
+  posx = rand() % (maxx - minx + 1) + minx;
+  posy= rand() % (maxy - miny + 1) + miny;
+  x = posx;
+  y = posy;
+ 
 }
 
 void Monster::TrackPlayer(Player& player) {
