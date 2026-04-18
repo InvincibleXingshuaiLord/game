@@ -6,15 +6,19 @@
 #include <cstdio>
 #include <windows.h>
 
-#define WIN_WIDTH        800
-#define WIN_HEIGHT       600
+#define WIN_WIDTH        1000
+#define WIN_HEIGHT       800
+
+//获取全局消息
+ExMessage msg = { 0 };
+
 
 //游戏帧率
 #define FPS              60
 
 //玩家初始属性
 #define PLAYER_INIT_HP   100
-#define PLAYER_INIT_ATK  10
+#define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
 #define PLAYER_SPEED     4
 #define BULLET_SPEED     8
@@ -24,10 +28,10 @@
 #define EXP_PER_LEVEL    20
 
 //每隔多少级生成一次小BOSS
-#define MINI_BOSS_LV     10
+#define MINI_BOSS_LV     5
 
 //多少级生成大BOSS
-#define FINAL_BOSS_LV    30
+#define FINAL_BOSS_LV    20
 
 //玩家受伤后无敌帧（毫秒）
 #define INVINCIBLE_TIME  800
@@ -138,6 +142,7 @@ public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
+	void ShootMonsterBullet();//怪物攻击，发射子弹
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
@@ -377,18 +382,46 @@ void Player::LevelUp() {
 }
 
 Bullet::Bullet() {
-
+    this->x = -100;
+    this->y = -100;
+    this->w = 10;
+    this->h = 10;
+    this->speed = 8;
+    this->atk = 1;
+    this->active = false;
 }
 
 void Bullet::Init(int px, int py) {
-
+    this->x = px, this->y = py;//更新子弹坐标
+    
+    this->active = true;
 }
 
-void Bullet::Move() {
-
+void Bullet::Move() { 
+    int mx, my, dx, dy;
+    double vx, vy, t, s;
+    while (true) {
+        if (peekmessage(&msg, EX_MOUSE )) {};//获取鼠标消息
+        if (msg.message == WM_LBUTTONDOWN) {//左键按下
+            mx = msg.x, my = msg.y;
+            dx = mx - this->x, dy = my - this->y;
+            s = sqrt(dx * dx + dy * dy);
+            t = double(s / this->speed);
+            vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
+            this->x += vx; this->y += vy;//更新子弹坐标
+        }
+        
+    }
 }
 
 bool Bullet::CheckBorder() {
+    if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
+    if (this->x + this->w <= 0 || this->x >= getwidth() || this->y + h <= 0 || this->y >= getheight())
+     //如果整个图片出界，返回真
+    {
+        this->active = false;//同时改变子弹的存在状态
+        return true;
+    }
     return false;
 }
 //静行开始
@@ -414,6 +447,9 @@ void Monster::TrackPlayer(Player& player) {
 
 }
 
+void Monster::ShootMonsterBullet() {
+    
+}
 void Monster::TakeDamage(int dmg) {
 
 }
