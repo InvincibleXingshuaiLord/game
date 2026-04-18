@@ -5,7 +5,7 @@
 #include <ctime>
 #include <cstdio>
 #include <windows.h>
-
+#include<cmath>
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       800
 
@@ -454,8 +454,16 @@ void Monster::RandomSpawn() {
 }
 
 void Monster::TrackPlayer(Player& player) {
+    while (abs(player.x-x)>1&&abs(player.y-y>1)) {
+        int dx = player.x - x;
+        int dy = player.y - y;
+        double distance = sqrt(dx * dx + dy * dy);
+        x += (dx / distance) * speed;
+        y += (dy / distance) * speed;
+    }
+}//可优化的点 一开始巡逻 在离玩家距离多少之内然后进行追踪 并且速度是逐渐累加 而不是直接一下加到最大
 
-}
+
 
 void Monster::ShootMonsterBullet() {
     
