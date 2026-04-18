@@ -116,7 +116,8 @@ public:
 public:
     Bullet();           //构造函数
     void Init(int px, int py); //初始化子弹位置
-    void Move();        //子弹移动
+    void P_Move();                      //玩家子弹移动
+    void M_Move(Monster&bigboss);       //大boss子弹移动
     bool CheckBorder(); //检测子弹是否出界，出界则销毁
 };
 
@@ -388,17 +389,20 @@ Bullet::Bullet() {
     this->speed = 8;
     this->atk = 1;
     this->active = false;
+    g_bullets.resize(0);
 }
 
 void Bullet::Init(int px, int py) {
-    this->x = px, this->y = py;//更新子弹坐标
-    
-    this->active = true;
+    this->x = px, this->y = py;//更新子弹初始坐标
+    this->active = true;//更新子弹存在状态
 }
 
-void Bullet::Move() { 
-    int mx, my, dx, dy;
+void Bullet::P_Move() { 
+    this->atk = g_player.atk;//更新玩家子弹伤害
+    int mx, my, dx, dy;//计算子弹坐标与鼠标坐标的差，让子弹走直线
+    mx = my = dx = dy = 0;
     double vx, vy, t, s;
+    vx = vy = t = s = 0;
     while (true) {
         if (peekmessage(&msg, EX_MOUSE )) {};//获取鼠标消息
         if (msg.message == WM_LBUTTONDOWN) {//左键按下
@@ -411,6 +415,11 @@ void Bullet::Move() {
         }
         
     }
+}
+
+void Bullet::M_Move(Monster& bigboss) {
+    this->atk = 100;//初始化怪物子弹伤害
+    bigboss.TrackPlayer(g_player);//子弹追击玩家   
 }
 
 bool Bullet::CheckBorder() {
