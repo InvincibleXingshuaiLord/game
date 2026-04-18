@@ -391,9 +391,19 @@ void Bullet::Move() {
 bool Bullet::CheckBorder() {
     return false;
 }
-
+//静行开始
 Monster::Monster() {
-
+ x=0;
+ y=0;
+ w=64;//需要到时候再改
+ h=64;//同上
+ hp=100;
+ maxhp=100;
+ speed=2;
+ expDrop=10;
+ score=10;
+ active=true;
+type=EntityType::MONSTER;
 }
 
 void Monster::RandomSpawn() {
@@ -411,7 +421,7 @@ void Monster::TakeDamage(int dmg) {
 void Monster::OnDead() {
 
 }
-
+//静行结束
 void GameRes::Load() {
 
 }
