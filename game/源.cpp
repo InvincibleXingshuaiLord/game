@@ -364,35 +364,95 @@ int main()
 }
 
 Player::Player() {
-
+    Init();
 }
 
 void Player::Init() {
-
+    w = 50;
+    h = 50;
+    //屏幕中心
+    x = WIN_WIDTH / 2 - w / 2;
+    y = WIN_HEIGHT / 2 - h / 2;
+    //基础属性
+    hp = PLAYER_INIT_HP;
+    maxHp = PLAYER_INIT_HP;
+    atk = PLAYER_INIT_ATK;
+    moveSpeed = PLAYER_SPEED;
+    //等级经验
+    level = 1;
+    exp = 0;
+    expNeed = EXP_PER_LEVEL;
+    score = 0;
+    //无敌状态
+    isInvincible = false;
+    invincibleTimer = 0;
 }
 
 void Player::Reset() {
-
+    Init();
 }
 
 void Player::Move() {
-
+    if (GetAsyncKeyState('W') & 0x8000) {
+        y -= moveSpeed;
+    }
+    if (GetAsyncKeyState('S') & 0x8000) {
+        y += moveSpeed;
+    }
+    if (GetAsyncKeyState('A') & 0x8000) {
+        x -= moveSpeed;
+    }
+    if (GetAsyncKeyState('D') & 0x8000) {
+        x += moveSpeed;
+    }
+    //在屏幕内移动
+    LimitBorder();
 }
 
 void Player::LimitBorder() {
-
+    //左边界
+    if (x < 0) x = 0;
+    //右边界
+    if (x + w > WIN_WIDTH) x = WIN_WIDTH - w;
+    //上边界
+    if (y < 0) y = 0;
+    //下边界
+    if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
 }
 
 void Player::Attack() {
-
+    //鼠标左键攻击
+    if (msg.message == WM_LBUTTONDOWN)
+    {
+        Bullet bullet;
+        //从玩家中心发射
+        bullet.Init(x + w / 2, y + h / 2);
+        g_bullets.push_back(bullet);
+    }
 }
 
 void Player::TakeDamage(int dmg) {
-
+    //无敌不受伤害
+    if (isInvincible) return;
+    //扣血
+    hp -= dmg;
+    if (hp < 0) hp = 0;
+    //无敌帧
+    isInvincible = true;
+    invincibleTimer = GetTickCount();
 }
 
 void Player::LevelUp() {
-
+    //扣除升级所需经验
+    exp -= expNeed;
+    //等级提升
+    level++;
+    //升级属性强化
+    maxHp += 20;
+    hp = maxHp;   //升级回满生命值
+    atk += 1;     //攻击力提升
+    moveSpeed += 1;//移动速度提升
+    expNeed += EXP_PER_LEVEL * 1.2;//提升下一级所需经验
 }
 
 Bullet::Bullet() {
