@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <windows.h>
 #include<cmath>
+#include "EasyXpng.h"
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       700
 
@@ -58,6 +59,13 @@ enum EntityType
     BULLET       //子弹
 };
 
+
+class Button;
+class Player;
+class Monster;
+class Bullet;
+class GameRes;
+
 // 按钮类
 class Button
 {
@@ -101,26 +109,6 @@ public:
     void LevelUp();     //玩家升级处理
 };
 
-//子弹类
-class Bullet
-{
-public:
-    int x;              //子弹X坐标
-    int y;              //子弹Y坐标
-    int w;              //子弹贴图宽度
-    int h;              //子弹贴图高度
-    int speed;          //子弹移动速度
-    int atk;            //子弹攻击力
-    bool active;        //子弹是否存在
-
-public:
-    Bullet();           //构造函数
-    void Init(int px, int py); //初始化子弹位置
-    void P_Move();                      //玩家子弹移动
-    void M_Move(Monster& bigboss);       //大boss子弹移动
-    bool CheckBorder(); //检测子弹是否出界，出界则销毁
-};
-
 //怪物类
 class Monster
 {
@@ -147,6 +135,28 @@ public:
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
+
+
+//子弹类
+class Bullet
+{
+public:
+    int x;              //子弹X坐标
+    int y;              //子弹Y坐标
+    int w;              //子弹贴图宽度
+    int h;              //子弹贴图高度
+    int speed;          //子弹移动速度
+    int atk;            //子弹攻击力
+    bool active;        //子弹是否存在
+
+public:
+    Bullet();           //构造函数
+    void Init(int px, int py); //初始化子弹位置
+    void P_Move();                      //玩家子弹移动
+    void M_Move(Monster& bigboss);       //大boss子弹移动
+    bool CheckBorder(); //检测子弹是否出界，出界则销毁
+};
+
 
 //图片类
 class GameRes
@@ -306,15 +316,16 @@ void DrawPlayerInfo();
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
-//对象定义区
-
 //用于开始界面的功能图形绘制
 void functionalshape();
 
-
 int main()
 {
-    DrawStartUI();
+    //对象定义区
+
+
+    //对象定义结束
+	srand((unsigned)time(NULL));
     //初始化游戏
     GameInit();
     while (g_isRun)
@@ -472,13 +483,14 @@ void Monster::TrackPlayer(Player& player) {
         x += (dx / distance) * speed;
         y += (dy / distance) * speed;
     }
-}//可优化的点 一开始巡逻 在离玩家距离多少之内然后进行追踪 并且速度是逐渐累加 而不是直接一下加到最大
+}
 
 
 
 void Monster::ShootMonsterBullet() {
 
 }
+
 void Monster::TakeDamage(int dmg) {
 
 }
