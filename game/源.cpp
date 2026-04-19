@@ -485,8 +485,6 @@ void Monster::TrackPlayer(Player& player) {
     }
 }
 
-
-
 void Monster::ShootMonsterBullet() {
 
 }
