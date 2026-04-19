@@ -322,12 +322,12 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 int main()
 {
     //对象定义区
-    
+	GameRes* picture = new GameRes();
 
     //对象定义结束
 	srand((unsigned)time(NULL));
     //初始化游戏
-    GameInit();
+    GameInit( picture);
 
     //游戏主循环
     while (g_isRun)
@@ -361,6 +361,7 @@ int main()
     }
     g_res.Free();
     closegraph();
+	picture->Free();
 
     return 0;
 }
@@ -582,7 +583,7 @@ void GameRes::Free() {
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
-void GameInit()
+void GameInit(GameRes* picture)
 {
     // 创建图形窗口
     initgraph(WIN_WIDTH, WIN_HEIGHT);
@@ -591,6 +592,9 @@ void GameInit()
 
     // 初始化随机数种子
     srand((unsigned)time(NULL));
+
+	// 加载游戏资源
+	picture->Load();
 
     // 初始化游戏状态
     g_isRun = true;
