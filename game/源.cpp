@@ -520,6 +520,20 @@ void InputUpdate() {
 }
 
 bool CheckButtonClick(Button& btn) {
+    ExMessage msg;
+    if (peekmessage(&msg, EX_MOUSE))
+    {
+        // 检测鼠标左键按下
+        if (msg.message == WM_LBUTTONDOWN)
+        {
+            // 判断鼠标坐标是否在按钮区域内
+            if (msg.x >= btn.x && msg.x <= btn.x + btn.w &&
+                msg.y >= btn.y && msg.y <= btn.y + btn.h)
+            {
+                return true;  // 点击了按钮
+            }
+        }
+    }
     return false;
 }
 
