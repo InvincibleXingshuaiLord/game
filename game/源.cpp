@@ -775,7 +775,7 @@ void Collide_PlayerMonster() {
 }
 
 void CheckLevelUp() {
-    while (g_player.exp >= g_player.expNeed)
+    if(g_player.exp >= g_player.expNeed)
     {
         g_player.LevelUp();
     }
