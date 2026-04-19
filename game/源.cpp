@@ -231,13 +231,82 @@ Button     btnRestart;
 Button     btnExit;
 
 // 游戏初始化（窗口、资源、变量初始值）
-void GameInit();
+void GameInit()
+{
+    // 创建图形窗口
+    initgraph(WIN_WIDTH, WIN_HEIGHT);
+    setbkcolor(WHITE);
+    cleardevice();
+
+    // 初始化随机数种子
+    srand((unsigned)time(NULL));
+
+    // 初始化游戏状态
+    g_isRun = true;
+    g_isPause = false;
+    g_isGameOver = false;
+    g_isWin = false;
+    g_curUI = START;
+    g_hasFinalBoss = false;
+
+    // 玩家初始化
+    g_player.Init();
+
+    // 清空子弹和怪物
+    g_bullets.clear();
+    g_monsters.clear();
+
+    // 控制怪物多久出一个
+    g_spawnRate = 60;
+    g_spawnTimer = 0;
+}
 
 // 重置游戏数据（重新开始一局）
-void GameReset();
+void GameReset()
+{
+    // 重置玩家状态
+    g_player.Reset();
+
+    // 清空所有子弹和怪物
+    g_bullets.clear();
+    g_monsters.clear();
+
+    // 游戏状态恢复初始
+    g_isGameOver = false;
+    g_isWin = false;
+    g_isPause = false;
+    g_curUI = PLAY;
+    g_hasFinalBoss = false;
+    g_spawnTimer = 0;
+}
 
 // 输入更新（键盘+鼠标消息处理）
-void InputUpdate();
+void InputUpdate()
+{
+    // 读取鼠标和键盘消息
+    peekmessage(&msg, EX_MOUSE | EX_KEY);
+
+    // 只有在玩游戏、没暂停的时候输入
+    if (g_curUI == PLAY && !g_isPause)
+    {
+        // 玩家移动
+        g_player.Move();
+
+        // 鼠标左键点击，玩家发射子弹
+        if (msg.message == WM_LBUTTONDOWN)
+        {
+            g_player.Attack();
+        }
+
+        // 按ESC键暂停
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+        {
+            g_isPause = true;
+            g_curUI = PAUSE;
+            Sleep(200);   
+        }
+    }
+}
 
 // 检测鼠标是否点击指定按钮
 bool CheckButtonClick(Button& btn);
@@ -264,7 +333,40 @@ void DrawPauseUI();
 void DrawSettlementUI();
 
 // 游戏逻辑每帧更新
-void GameUpdate();
+void GameUpdate()
+{
+    // 怪物生成计时
+    g_spawnTimer++;
+    if (g_spawnTimer >= g_spawnRate)
+    {
+        SpawnMonster();
+        g_spawnTimer = 0;
+    }
+
+
+    // 更新所有子弹状态
+    UpdateBullets();
+
+    // 更新所有怪物的移动与行为
+    UpdateMonsters();
+
+    // 子弹与怪物的碰撞检测
+    Collide_BulletMonster();
+
+    // 玩家与怪物的碰撞检测
+    Collide_PlayerMonster();
+
+    // 检测玩家是否升级
+    CheckLevelUp();
+
+    // 更新玩家无敌帧状态
+    UpdateInvincible();
+
+
+
+    // 检测游戏是否结束（胜利/失败）
+    CheckGameEnd();
+}
 
 // 随机生成普通怪物
 void SpawnMonster();
@@ -294,7 +396,38 @@ void CheckLevelUp();
 void UpdateInvincible();
 
 // 检测游戏结束条件（胜利/失败）
-void CheckGameEnd();
+void CheckGameEnd()
+{
+    // 玩家血量小于等于0时游戏失败
+    if (g_player.hp <= 0)
+    {
+        g_isGameOver = true;
+        g_isWin = false;
+        g_curUI = SETTLEMENT;
+    }
+
+    // 玩家等级达到最大BOSS等级，并且大BOSS也被打死时游戏胜利
+    if (g_player.level >= FINAL_BOSS_LV && g_hasFinalBoss)
+    {
+        bool bossAlive = false;
+
+        for (int i = 0; i < g_monsters.size(); i++)
+        {
+            if (g_monsters[i].type == FINAL_BOSS && g_monsters[i].active)
+            {
+                bossAlive = true;
+                break;
+            }
+        }
+
+        if (bossAlive == false)
+        {
+            g_isGameOver = true;
+            g_isWin = true;
+            g_curUI = SETTLEMENT;
+        }
+    }
+}
 
 // 绘制游戏界面（场景、实体、UI）
 void DrawGameUI();
@@ -314,6 +447,8 @@ int main()
 {
     //初始化游戏
     GameInit();
+
+    //游戏主循环
     while (g_isRun)
     {
         //处理鼠标和键盘
