@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <windows.h>
 #include<cmath>
+#include "EasyXpng.h"
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       700
 
