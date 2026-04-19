@@ -242,7 +242,7 @@ Button     btnRestart;
 Button     btnExit;
 
 // 游戏初始化（窗口、资源、变量初始值）
-void GameInit();
+void GameInit(GameRes* picture);
 
 // 重置游戏数据（重新开始一局）
 void GameReset();
@@ -327,7 +327,7 @@ int main()
     //对象定义结束
 	srand((unsigned)time(NULL));
     //初始化游戏
-    GameInit( picture);
+    GameInit(picture);
 
     //游戏主循环
     while (g_isRun)
