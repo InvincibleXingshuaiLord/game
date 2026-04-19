@@ -537,8 +537,46 @@ bool CheckButtonClick(Button& btn) {
     return false;
 }
 
-void DrawButton(Button& btn, const char* text) {
+void DrawButton(Button& btn, const char* text)
+{
 
+    POINT cursor;
+    GetCursorPos(&cursor);
+    HWND hwnd = GetHWnd();
+    ScreenToClient(hwnd, &cursor);
+    bool isHover = (cursor.x >= btn.x && cursor.x <= btn.x + btn.w &&
+        cursor.y >= btn.y && cursor.y <= btn.y + btn.h);
+
+
+    COLORREF bgColor, textColor;
+    if (isHover)
+    {
+        bgColor = RGB(80, 80, 80);
+        textColor = RGB(255, 255, 0);
+    }
+    else
+    {
+        bgColor = RGB(50, 50, 50);
+        textColor = RGB(255, 255, 255);
+    }
+
+
+    setfillcolor(bgColor);
+    setlinecolor(RGB(200, 200, 200));
+    solidrectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+    rectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+
+
+    setbkmode(TRANSPARENT);
+    settextstyle(24, 0, "微软雅黑");
+    settextcolor(textColor);
+
+
+    int textW = textwidth(text);
+    int textH = textheight(text);
+    int textX = btn.x + (btn.w - textW) / 2;
+    int textY = btn.y + (btn.h - textH) / 2;
+    outtextxy(textX, textY, text);
 }
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
