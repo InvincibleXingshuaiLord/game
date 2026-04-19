@@ -5,9 +5,10 @@
 #include <ctime>
 #include <cstdio>
 #include <windows.h>
-
+#include<cmath>
+#include "EasyXpng.h"
 #define WIN_WIDTH        1000
-#define WIN_HEIGHT       800
+#define WIN_HEIGHT       700
 
 //获取全局消息
 ExMessage msg = { 0 };
@@ -58,6 +59,13 @@ enum EntityType
     BULLET       //子弹
 };
 
+
+class Button;
+class Player;
+class Monster;
+class Bullet;
+class GameRes;
+
 // 按钮类
 class Button
 {
@@ -101,25 +109,6 @@ public:
     void LevelUp();     //玩家升级处理
 };
 
-//子弹类
-class Bullet
-{
-public:
-    int x;              //子弹X坐标
-    int y;              //子弹Y坐标
-    int w;              //子弹贴图宽度
-    int h;              //子弹贴图高度
-    int speed;          //子弹移动速度
-    int atk;            //子弹攻击力
-    bool active;        //子弹是否存在
-
-public:
-    Bullet();           //构造函数
-    void Init(int px, int py); //初始化子弹位置
-    void Move();        //子弹移动
-    bool CheckBorder(); //检测子弹是否出界，出界则销毁
-};
-
 //怪物类
 class Monster
 {
@@ -142,10 +131,32 @@ public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
-	void ShootMonsterBullet();//怪物攻击，发射子弹
+    void ShootMonsterBullet();//怪物攻击，发射子弹
     void TakeDamage(int dmg); //怪物受伤处理
     void OnDead();      //怪物死亡处理
 };
+
+
+//子弹类
+class Bullet
+{
+public:
+    int x;              //子弹X坐标
+    int y;              //子弹Y坐标
+    int w;              //子弹贴图宽度
+    int h;              //子弹贴图高度
+    int speed;          //子弹移动速度
+    int atk;            //子弹攻击力
+    bool active;        //子弹是否存在
+
+public:
+    Bullet();           //构造函数
+    void Init(int px, int py); //初始化子弹位置
+    void P_Move();                      //玩家子弹移动
+    void M_Move(Monster& bigboss);       //大boss子弹移动
+    bool CheckBorder(); //检测子弹是否出界，出界则销毁
+};
+
 
 //图片类
 class GameRes
@@ -206,7 +217,7 @@ int        g_spawnTimer;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
 
-// 开始界面-开始游戏按钮
+// 开始界面-开始游戏按钮(开始界面定义了每个功能图形（正矩形）的坐标变量，可根据坐标编写按钮功能，简单很多)
 Button     btnStart;
 
 // 开始界面-玩法介绍按钮
@@ -305,13 +316,16 @@ void DrawPlayerInfo();
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
-//对象定义区
-
-
-
+//用于开始界面的功能图形绘制
+void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 
 int main()
 {
+    //对象定义区
+
+
+    //对象定义结束
+	srand((unsigned)time(NULL));
     //初始化游戏
     GameInit();
 
@@ -352,35 +366,95 @@ int main()
 }
 
 Player::Player() {
-
+    Init();
 }
 
 void Player::Init() {
-
+    w = 50;
+    h = 50;
+    //屏幕中心
+    x = WIN_WIDTH / 2 - w / 2;
+    y = WIN_HEIGHT / 2 - h / 2;
+    //基础属性
+    hp = PLAYER_INIT_HP;
+    maxHp = PLAYER_INIT_HP;
+    atk = PLAYER_INIT_ATK;
+    moveSpeed = PLAYER_SPEED;
+    //等级经验
+    level = 1;
+    exp = 0;
+    expNeed = EXP_PER_LEVEL;
+    score = 0;
+    //无敌状态
+    isInvincible = false;
+    invincibleTimer = 0;
 }
 
 void Player::Reset() {
-
+    Init();
 }
 
 void Player::Move() {
-
+    if (GetAsyncKeyState('W') & 0x8000) {
+        y -= moveSpeed;
+    }
+    if (GetAsyncKeyState('S') & 0x8000) {
+        y += moveSpeed;
+    }
+    if (GetAsyncKeyState('A') & 0x8000) {
+        x -= moveSpeed;
+    }
+    if (GetAsyncKeyState('D') & 0x8000) {
+        x += moveSpeed;
+    }
+    //在屏幕内移动
+    LimitBorder();
 }
 
 void Player::LimitBorder() {
-
+    //左边界
+    if (x < 0) x = 0;
+    //右边界
+    if (x + w > WIN_WIDTH) x = WIN_WIDTH - w;
+    //上边界
+    if (y < 0) y = 0;
+    //下边界
+    if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
 }
 
 void Player::Attack() {
-
+    //鼠标左键攻击
+    if (msg.message == WM_LBUTTONDOWN)
+    {
+        Bullet bullet;
+        //从玩家中心发射
+        bullet.Init(x + w / 2, y + h / 2);
+        g_bullets.push_back(bullet);
+    }
 }
 
 void Player::TakeDamage(int dmg) {
-
+    //无敌不受伤害
+    if (isInvincible) return;
+    //扣血
+    hp -= dmg;
+    if (hp < 0) hp = 0;
+    //无敌帧
+    isInvincible = true;
+    invincibleTimer = GetTickCount();
 }
 
 void Player::LevelUp() {
-
+    //扣除升级所需经验
+    exp -= expNeed;
+    //等级提升
+    level++;
+    //升级属性强化
+    maxHp += 20;
+    hp = maxHp;   //升级回满生命值
+    atk += 1;     //攻击力提升
+    moveSpeed += 1;//移动速度提升
+    expNeed += EXP_PER_LEVEL * 1.2;//提升下一级所需经验
 }
 
 Bullet::Bullet() {
@@ -391,19 +465,22 @@ Bullet::Bullet() {
     this->speed = 8;
     this->atk = 1;
     this->active = false;
+    g_bullets.resize(0);
 }
 
 void Bullet::Init(int px, int py) {
-    this->x = px, this->y = py;//更新子弹坐标
-    
-    this->active = true;
+    this->x = px, this->y = py;//更新子弹初始坐标
+    this->active = true;//更新子弹存在状态
 }
 
-void Bullet::Move() { 
-    int mx, my, dx, dy;
+void Bullet::P_Move() {
+    this->atk = g_player.atk;//更新玩家子弹伤害
+    int mx, my, dx, dy;//计算子弹坐标与鼠标坐标的差，让子弹走直线
+    mx = my = dx = dy = 0;
     double vx, vy, t, s;
+    vx = vy = t = s = 0;
     while (true) {
-        if (peekmessage(&msg, EX_MOUSE )) {};//获取鼠标消息
+        if (peekmessage(&msg, EX_MOUSE)) {};//获取鼠标消息
         if (msg.message == WM_LBUTTONDOWN) {//左键按下
             mx = msg.x, my = msg.y;
             dx = mx - this->x, dy = my - this->y;
@@ -412,36 +489,68 @@ void Bullet::Move() {
             vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
             this->x += vx; this->y += vy;//更新子弹坐标
         }
-        
+
     }
+}
+
+void Bullet::M_Move(Monster& bigboss) {
+    this->atk = 100;//初始化怪物子弹伤害
+    bigboss.TrackPlayer(g_player);//子弹追击玩家   
 }
 
 bool Bullet::CheckBorder() {
     if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
     if (this->x + this->w <= 0 || this->x >= getwidth() || this->y + h <= 0 || this->y >= getheight())
-     //如果整个图片出界，返回真
+        //如果整个图片出界，返回真
     {
         this->active = false;//同时改变子弹的存在状态
         return true;
     }
     return false;
 }
-
+//静行开始
 Monster::Monster() {
-
+    x = 0;
+    y = 0;
+    w = 64;//需要到时候再改
+    h = 64;//同上
+    hp = 100;
+    maxHp = 100;
+    speed = 2;
+    expDrop = 10;
+    score = 10;
+    active = true;
+    type = EntityType::MONSTER;
 }
 
 void Monster::RandomSpawn() {
+    int posx;
+    int posy;
+    int minx = 0;
+    int miny = 0;
+    int maxx = 100;
+    int maxy = 100;
+    posx = rand() % (maxx - minx + 1) + minx;
+    posy = rand() % (maxy - miny + 1) + miny;
+    x = posx;
+    y = posy;
 
 }
 
 void Monster::TrackPlayer(Player& player) {
-
+    while (abs(player.x - x) > 1 && abs(player.y - y > 1)) {
+        int dx = player.x - x;
+        int dy = player.y - y;
+        double distance = sqrt(dx * dx + dy * dy);
+        x += (dx / distance) * speed;
+        y += (dy / distance) * speed;
+    }
 }
 
 void Monster::ShootMonsterBullet() {
-    
+
 }
+
 void Monster::TakeDamage(int dmg) {
 
 }
@@ -449,13 +558,26 @@ void Monster::TakeDamage(int dmg) {
 void Monster::OnDead() {
 
 }
-
+//静行结束
 void GameRes::Load() {
-
+    //
+	
+	loadimage(&this->imgPlayer, "photo/kun.png", 32, 32);
+	loadimage(&this->imgBullet, "photo/bullet.png", 10, 10);
+	loadimage(&this->imgMonster, "photo/Xiaoguai.png", 32, 32);
+	loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
+	loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
+	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgHelp, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgTeam, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgPause, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgSettlement, "photo/kk1.jpg", 1100, 700);
 }
 
 void GameRes::Free() {
-
+    delete this;
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
@@ -537,15 +659,101 @@ void InputUpdate()
 }
 
 bool CheckButtonClick(Button& btn) {
+    ExMessage msg;
+    if (peekmessage(&msg, EX_MOUSE))
+    {
+        // 检测鼠标左键按下
+        if (msg.message == WM_LBUTTONDOWN)
+        {
+            // 判断鼠标坐标是否在按钮区域内
+            if (msg.x >= btn.x && msg.x <= btn.x + btn.w &&
+                msg.y >= btn.y && msg.y <= btn.y + btn.h)
+            {
+                return true;  // 点击了按钮
+            }
+        }
+    }
     return false;
 }
 
-void DrawButton(Button& btn, const char* text) {
+void DrawButton(Button& btn, const char* text)
+{
 
+    POINT cursor;
+    GetCursorPos(&cursor);
+    HWND hwnd = GetHWnd();
+    ScreenToClient(hwnd, &cursor);
+    bool isHover = (cursor.x >= btn.x && cursor.x <= btn.x + btn.w &&
+        cursor.y >= btn.y && cursor.y <= btn.y + btn.h);
+
+
+    COLORREF bgColor, textColor;
+    if (isHover)
+    {
+        bgColor = RGB(80, 80, 80);
+        textColor = RGB(255, 255, 0);
+    }
+    else
+    {
+        bgColor = RGB(50, 50, 50);
+        textColor = RGB(255, 255, 255);
+    }
+
+
+    setfillcolor(bgColor);
+    setlinecolor(RGB(200, 200, 200));
+    solidrectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+    rectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+
+
+    setbkmode(TRANSPARENT);
+    settextstyle(24, 0, "微软雅黑");
+    settextcolor(textColor);
+
+
+    int textW = textwidth(text);
+    int textH = textheight(text);
+    int textX = btn.x + (btn.w - textW) / 2;
+    int textY = btn.y + (btn.h - textH) / 2;
+    outtextxy(textX, textY, text);
 }
-
+//用于开始界面的功能图形绘制
+void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
+    setfillcolor(0X000000);
+    solidrectangle(rx, ry, rx + rw, ry + rh);
+    setbkmode(TRANSPARENT);
+    settextstyle(30, 10, "微软雅黑");
+    settextcolor(0XFFFFFF);
+    outtextxy(rx + (rw - textwidth(s.c_str())) / 2, ry + (rh - textheight(s.c_str())) / 2, s.c_str());
+}
 void DrawStartUI() {
 
+    initgraph(1000, 700);
+
+    IMAGE img;
+    loadimage(&img, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
+    putimage(0, 0, &img);
+
+    int rx, ry[5], rh, rw, i;
+    rx = 600;
+    ry[0] = 280;
+    rw = 130;
+    rh = 50;
+    for (i = 1; i < 5; i++) {
+        ry[i] = ry[i - 1] + rh + 10;
+    }
+    //按钮图形绘制
+    functionalshape(rx, ry[0], rw, rh, "开始游戏");
+    functionalshape(rx, ry[1], rw, rh, "玩法介绍");
+    functionalshape(rx, ry[2], rw, rh, "团队介绍");
+    functionalshape(rx, ry[3], rw, rh, "游戏设置");
+    functionalshape(rx, ry[4], rw, rh, "退出游戏");
+    setbkmode(TRANSPARENT);
+    settextstyle(50, 30, "隶书");
+    settextcolor(0X000000);
+    char s[50] = "追上我把命都给你！";
+    outtextxy((1000 - textwidth(s)) / 2, 30, s);
+    getchar();
 }
 
 void DrawHelpUI() {
@@ -603,15 +811,49 @@ void GameUpdate()
 }
 
 void SpawnMonster() {
+    Monster monster;
+    monster.RandomSpawn();         // 随机位置和尺寸
+    monster.type = MONSTER;
+    monster.active = true;
 
+    monster.maxHp = 5;             // 血量5点
+    monster.hp = monster.maxHp;
+    monster.speed = MONSTER_SPEED;
+    monster.expDrop = 5;           // 掉落经验
+    monster.score = 10;            // 击杀得分
+
+    g_monsters.push_back(monster);
 }
 
 void SpawnMiniBoss() {
+    Monster miniBoss;
+    miniBoss.RandomSpawn();        // 随机位置和尺寸
+    miniBoss.type = MINI_BOSS;
+    miniBoss.active = true;
 
+    miniBoss.maxHp = 200;          // 血量200点
+    miniBoss.hp = miniBoss.maxHp;
+    miniBoss.speed = MONSTER_SPEED;
+    miniBoss.expDrop = 50;         // 掉落经验
+    miniBoss.score = 200;          // 击杀得分
+
+    g_monsters.push_back(miniBoss);
 }
 
 void SpawnFinalBoss() {
+    Monster finalBoss;
+    finalBoss.RandomSpawn();       // 随机位置和尺寸
+    finalBoss.type = FINAL_BOSS;
+    finalBoss.active = true;
 
+    finalBoss.maxHp = 913;         // 血量913点
+    finalBoss.hp = finalBoss.maxHp;
+    finalBoss.speed = MONSTER_SPEED;
+    finalBoss.expDrop = 500;       // 掉落经验
+    finalBoss.score = 1000;        // 击杀得分
+
+    g_monsters.push_back(finalBoss);
+    g_hasFinalBoss = true;
 }
 
 void UpdateBullets() {
@@ -631,7 +873,10 @@ void Collide_PlayerMonster() {
 }
 
 void CheckLevelUp() {
-
+    if(g_player.exp >= g_player.expNeed)
+    {
+        g_player.LevelUp();
+    }
 }
 
 void UpdateInvincible() {
