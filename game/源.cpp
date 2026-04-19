@@ -322,7 +322,7 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 int main()
 {
     //对象定义区
-
+    
 
     //对象定义结束
 	srand((unsigned)time(NULL));
@@ -559,6 +559,7 @@ void Monster::OnDead() {
 
 }
 //静行结束
+
 void GameRes::Load() {
     //
 	
@@ -686,36 +687,41 @@ void DrawButton(Button& btn, const char* text)
     bool isHover = (cursor.x >= btn.x && cursor.x <= btn.x + btn.w &&
         cursor.y >= btn.y && cursor.y <= btn.y + btn.h);
 
-
-    COLORREF bgColor, textColor;
-    if (isHover)
+    BeginBatchDraw();
+    while (true)
     {
-        bgColor = RGB(80, 80, 80);
-        textColor = RGB(255, 255, 0);
+        COLORREF bgColor, textColor;
+        if (isHover)
+        {
+            bgColor = RGB(80, 80, 80);
+            textColor = RGB(255, 255, 0);
+        }
+        else
+        {
+            bgColor = RGB(50, 50, 50);
+            textColor = RGB(255, 255, 255);
+        }
+
+
+        setfillcolor(bgColor);
+        setlinecolor(RGB(200, 200, 200));
+        solidrectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+        rectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
+
+
+        setbkmode(TRANSPARENT);
+        settextstyle(24, 0, "微软雅黑");
+        settextcolor(textColor);
+
+
+        int textW = textwidth(text);
+        int textH = textheight(text);
+        int textX = btn.x + (btn.w - textW) / 2;
+        int textY = btn.y + (btn.h - textH) / 2;
+        outtextxy(textX, textY, text);
+        FlushBatchDraw();
     }
-    else
-    {
-        bgColor = RGB(50, 50, 50);
-        textColor = RGB(255, 255, 255);
-    }
-
-
-    setfillcolor(bgColor);
-    setlinecolor(RGB(200, 200, 200));
-    solidrectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
-    rectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h);
-
-
-    setbkmode(TRANSPARENT);
-    settextstyle(24, 0, "微软雅黑");
-    settextcolor(textColor);
-
-
-    int textW = textwidth(text);
-    int textH = textheight(text);
-    int textX = btn.x + (btn.w - textW) / 2;
-    int textY = btn.y + (btn.h - textH) / 2;
-    outtextxy(textX, textY, text);
+    EndBatchDraw();
 }
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
