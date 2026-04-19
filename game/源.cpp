@@ -317,7 +317,7 @@ void DrawPlayerInfo();
 void DrawEntities();
 
 //用于开始界面的功能图形绘制
-void functionalshape();
+void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 
 int main()
 {
