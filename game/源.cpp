@@ -324,6 +324,7 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 
 int main()
 {
+   
     //对象定义区
 	GameRes* picture = new GameRes();
     Player* player = new Player();
@@ -574,7 +575,7 @@ void Monster::TakeDamage(int dmg,Player& player) {
         hp -= dmg;
     }
     else {
-        hp = 0;
+        hp =0;
     }
     if (hp == 0) {
         OnDead(player);
@@ -592,7 +593,7 @@ void GameRes::Load() {
 	
 	loadimage(&this->imgPlayer, "photo/kun.png", 32, 32);
 	loadimage(&this->imgBullet, "photo/bullet.png", 10, 10);
-	loadimage(&this->imgMonster, "photo/Xiaoguai.png", 32, 32);
+	loadimage(&this->imgMonster, "photo/monster.png", 32, 32);
 	loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
 	loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
@@ -602,6 +603,10 @@ void GameRes::Load() {
 	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgPause, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgSettlement, "photo/kk1.jpg", 1100, 700);
+    loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
+    loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
+    loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
+   
 }
 
 void GameRes::Free() {
@@ -948,7 +953,15 @@ void CheckGameEnd()
     }
 }
 
-void DrawGameUI() {
+void DrawGameUI(GameRes* picture, Player*p) {
+
+
+
+    putimage(0, 0, &picture->bgGame);
+    DrawPlayerInfo(picture, p);
+
+    //暂停按钮绘制
+    functionalshape(920, 620, 80, 80, "暂停游戏");
 
 }
 
