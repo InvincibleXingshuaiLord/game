@@ -1,4 +1,3 @@
-//01星球牛逼
 #include <graphics.h>
 #include <iostream>
 #include <vector>
@@ -154,6 +153,7 @@ public:
     void Init(int px, int py); //初始化子弹位置
     void P_Move();                      //玩家子弹移动
     void M_Move(Monster& bigboss);       //大boss子弹移动
+    void TrackPlayer(Player& player);      //boss子弹追击玩家
     bool CheckBorder(); //检测子弹是否出界，出界则销毁
 };
 
@@ -459,8 +459,8 @@ void Player::LevelUp() {
 }
 
 Bullet::Bullet() {
-    this->x = -100;
-    this->y = -100;
+    this->x = 0;
+    this->y = 0;
     this->w = 10;
     this->h = 10;
     this->speed = 8;
@@ -476,32 +476,40 @@ void Bullet::Init(int px, int py) {
 
 void Bullet::P_Move() {
     this->atk = g_player.atk;//更新玩家子弹伤害
-    int mx, my, dx, dy;//计算子弹坐标与鼠标坐标的差，让子弹走直线
+    //计算
+    int mx, my, dx, dy;
     mx = my = dx = dy = 0;
     double vx, vy, t, s;
     vx = vy = t = s = 0;
-    while (true) {
-        if (peekmessage(&msg, EX_MOUSE)) {};//获取鼠标消息
-        if (msg.message == WM_LBUTTONDOWN) {//左键按下
-            mx = msg.x, my = msg.y;
-            dx = mx - this->x, dy = my - this->y;
-            s = sqrt(dx * dx + dy * dy);
-            t = double(s / this->speed);
-            vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
-            this->x += vx; this->y += vy;//更新子弹坐标
-        }
 
-    }
+    mx = msg.x, my = msg.y;
+    dx = mx - this->x, dy = my - this->y;
+    s = sqrt(dx * dx + dy * dy);
+    t = double(s / this->speed);
+    vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
+
+    this->x += vx; this->y += vy;//更新子弹坐标
+       
 }
 
 void Bullet::M_Move(Monster& bigboss) {
     this->atk = 100;//初始化怪物子弹伤害
-    bigboss.TrackPlayer(g_player);//子弹追击玩家   
+    this->TrackPlayer(g_player);//子弹追击玩家 
+}
+
+void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
+    while (abs(player.x - this->x) > 1 && abs(player.y - this->y > 1)) {
+        int dx = player.x - this->x;
+        int dy = player.y - this->y;
+        double distance = sqrt(dx * dx + dy * dy);
+        this->x += (dx / distance) * this->speed;
+        this->y += (dy / distance) * this->speed;
+    }
 }
 
 bool Bullet::CheckBorder() {
     if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
-    if (this->x + this->w <= 0 || this->x >= getwidth() || this->y + h <= 0 || this->y >= getheight())
+    if (this->x  <= 0 || this->x + this->w >= getwidth() || this->y  <= 0 || this->y + this->h >= getheight())
         //如果整个图片出界，返回真
     {
         this->active = false;//同时改变子弹的存在状态
