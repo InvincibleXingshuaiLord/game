@@ -756,13 +756,12 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
     settextcolor(0XFFFFFF);
     outtextxy(rx + (rw - textwidth(s.c_str())) / 2, ry + (rh - textheight(s.c_str())) / 2, s.c_str());
 }
-void DrawStartUI() {
+void DrawStartUI(GameRes* picture) {
 
     initgraph(1000, 700);
 
-    IMAGE img;
-    loadimage(&img, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
-    putimage(0, 0, &img);
+    loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
+    putimage(0, 0, &picture->imgPlayer);
 
     int rx, ry[5], rh, rw, i;
     rx = 600;
