@@ -539,13 +539,15 @@ void Monster::RandomSpawn() {
 }
 
 void Monster::TrackPlayer(Player& player) {
-    while (abs(player.x - x) > 1 && abs(player.y - y > 1)) {
+  
         int dx = player.x - x;
         int dy = player.y - y;
+        if (distance < 1.0) {
+        return;
+    }
         double distance = sqrt(dx * dx + dy * dy);
         x += (dx / distance) * speed;
         y += (dy / distance) * speed;
-    }
 }
 
 void Monster::ShootMonsterBullet() {
@@ -553,11 +555,20 @@ void Monster::ShootMonsterBullet() {
 }
 
 void Monster::TakeDamage(int dmg) {
-
-}
-
+    if (dmg < 100 && dmg>0) {
+        hp -= dmg;
+    }
+    else {
+        hp = 0;
+    }
+    if (hp = 0) {
+        OnDead();
+    }
+}//遇到攻击怪物闪烁 是否需要加
 void Monster::OnDead() {
-
+ active = false;
+ player.exp += expDrop;
+ player.score += score;
 }
 //静行结束
 
