@@ -466,7 +466,6 @@ Bullet::Bullet() {
     this->speed = 8;
     this->atk = 1;
     this->active = false;
-    g_bullets.resize(0);
 }
 
 void Bullet::Init(int px, int py) {
