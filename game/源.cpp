@@ -558,7 +558,12 @@ void Monster::TrackPlayer(Player& player) {
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
-
+ if (!active) return;
+ Bullet bullet;
+ bullet.Init(x, y); 
+ bullet.speed = 3;   
+ bullet.atk = 1;     
+ bullet.active = true;
 }
 
 void Monster::TakeDamage(int dmg,Player& player) {
