@@ -572,9 +572,9 @@ void Monster::TakeDamage(int dmg,Player& player) {
         hp -= dmg;
     }
     else {
-        hp = 0;
+        hp =0;
     }
-    if (hp = 0) {
+    if (hp ==0) {
         OnDead(player);
     }
 }//遇到攻击怪物闪烁 是否需要加
@@ -590,7 +590,7 @@ void GameRes::Load() {
 	
 	loadimage(&this->imgPlayer, "photo/kun.png", 32, 32);
 	loadimage(&this->imgBullet, "photo/bullet.png", 10, 10);
-	loadimage(&this->imgMonster, "photo/Xiaoguai.png", 32, 32);
+	loadimage(&this->imgMonster, "photo/monster.png", 32, 32);
 	loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
 	loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
@@ -600,6 +600,10 @@ void GameRes::Load() {
 	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgPause, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgSettlement, "photo/kk1.jpg", 1100, 700);
+    loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
+    loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
+    loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
+   
 }
 
 void GameRes::Free() {
@@ -948,9 +952,9 @@ void CheckGameEnd()
 }
 
 void DrawGameUI(GameRes* picture, Player*p) {
-    initgraph(1000, 700);
 
-    loadimage(&picture->bgGame, "photo/kk4.jpg", 1000, 700);
+
+
     putimage(0, 0, &picture->bgGame);
     DrawPlayerInfo(picture, p);
 
@@ -962,9 +966,7 @@ void DrawGameUI(GameRes* picture, Player*p) {
 void DrawPlayerInfo(GameRes* picture, Player* p) {
     BeginBatchDraw();
     putimage(0, 0, &picture->bgGame);
-    loadimage(&picture->bgGame, "photo/ax1.png", 25, 25);
     putimagePNG(&picture->bgGame, 0, 10);
-    loadimage(&picture->bgGame, "photo/gj1.png", 25, 25);
     putimagePNG(&picture->bgGame, 0, 40);
     while (true) {
         cleardevice();
