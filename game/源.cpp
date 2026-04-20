@@ -549,12 +549,12 @@ void Monster::TrackPlayer(Player& player) {
   
         int dx = player.x - x;
         int dy = player.y - y;
-        if (distance < 1.0) {
-        return;
-    }
         double distance = sqrt(dx * dx + dy * dy);
         x += (dx / distance) * speed;
         y += (dy / distance) * speed;
+         if (distance < 1.0) {
+        return;
+    }
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
