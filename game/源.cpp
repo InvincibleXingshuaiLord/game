@@ -130,9 +130,9 @@ public:
     Monster();          //构造函数
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
-    void ShootMonsterBullet();//怪物攻击，发射子弹
-    void TakeDamage(int dmg); //怪物受伤处理
-    void OnDead();      //怪物死亡处理
+    void ShootMonsterBullet(Player& player);//怪物攻击，发射子弹
+    void TakeDamage(int dmg,Player& player); //怪物受伤处理
+    void OnDead(Player& player);      //怪物死亡处理
 };
 
 
@@ -557,11 +557,11 @@ void Monster::TrackPlayer(Player& player) {
         y += (dy / distance) * speed;
 }
 
-void Monster::ShootMonsterBullet() {
+void Monster::ShootMonsterBullet(Player& player) {
 
 }
 
-void Monster::TakeDamage(int dmg) {
+void Monster::TakeDamage(int dmg,Player& player) {
     if (dmg < 100 && dmg>0) {
         hp -= dmg;
     }
@@ -569,10 +569,10 @@ void Monster::TakeDamage(int dmg) {
         hp = 0;
     }
     if (hp = 0) {
-        OnDead();
+        OnDead(player);
     }
 }//遇到攻击怪物闪烁 是否需要加
-void Monster::OnDead() {
+void Monster::OnDead(Player& player) {
  active = false;
  player.exp += expDrop;
  player.score += score;
