@@ -768,8 +768,8 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
 void DrawStartUI(GameRes* picture) {
 
 
-    loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
-    putimage(0, 0, &picture->imgPlayer);
+    //loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
+    putimage(0, 0, &picture->bgStart);
 
     int rx, ry[5], rh, rw, i;
     rx = 600;
@@ -790,7 +790,7 @@ void DrawStartUI(GameRes* picture) {
     settextcolor(0X000000);
     char s[50] = "追上我把命都给你！";
     outtextxy((1000 - textwidth(s)) / 2, 30, s);
-    getchar();
+   
 }
 
 void DrawHelpUI() {
