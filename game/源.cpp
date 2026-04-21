@@ -272,7 +272,7 @@ void DrawTeamUI();
 void DrawPauseUI();
 
 // 绘制结算界面
-void DrawSettlementUI();
+void DrawSettlementUI(GameRes* picture, Player* player);
 
 // 游戏逻辑每帧更新
 void GameUpdate();
@@ -356,7 +356,7 @@ int main()
              DrawGameUI( picture, player);
             break;
         case PAUSE:      DrawPauseUI();     break;
-        case SETTLEMENT: DrawSettlementUI(); break;
+        case SETTLEMENT: DrawSettlementUI( picture, player); break;
         }
 
         //结束批量绘图，显示画面
