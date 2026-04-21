@@ -328,6 +328,7 @@ int main()
 	GameRes* picture = new GameRes();
     Player* player = new Player();
     //对象定义结束
+
 	srand((unsigned)time(NULL));
     //初始化游戏
     GameInit(picture);
@@ -1018,53 +1019,41 @@ void CheckGameEnd()
 
 void DrawGameUI(GameRes* picture, Player* player) {
 
-
-
     putimage(0, 0, &picture->bgGame);
     DrawPlayerInfo(picture, player);
-
+	DrawEntities(player, picture);
     //暂停按钮绘制
     functionalshape(920, 620, 80, 80, "暂停游戏");
 
 }
 
 void DrawPlayerInfo(GameRes* picture, Player* player) {
-    BeginBatchDraw();
-    putimage(0, 0, &picture->bgGame);
-    putimagePNG(&picture->bgGame, 0, 10);
-    putimagePNG(&picture->bgGame, 0, 40);
-    while (true) {
-        cleardevice();
-        //设置字体大小和格式
-        settextstyle(25, 0, "微软雅黑");
-        setbkmode(TRANSPARENT);
-        settextcolor(0X000000);
-        //绘制玩家等级
-        std::string s1 = "等级:";
-        outtextxy(0, 70, s1.c_str());
+    //设置字体大小和格式
+    settextstyle(25, 0, "微软雅黑");
+    setbkmode(TRANSPARENT);
+    settextcolor(0X000000);
+    //绘制玩家等级
+    std::string s1 = "等级:";
+    outtextxy(0, 70, s1.c_str());
 
-        char s2[50];
-        sprintf_s(s2, 50, "%d", player->level);
-        outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
+    char s2[50];
+    sprintf_s(s2, 50, "%d", player->level);
+    outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
 
-        //绘制玩家分数
-        std::string s3 = "分数:";
-        outtextxy(0, 95, s3.c_str());
-        char s4[50];
-        sprintf_s(s4, 50, "%d", player->score);
-        outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
-        setfillcolor(0XE2961B);
-        solidrectangle(70, 78, 100, 88);
-        //绘制玩家血量
-        setfillcolor(RED);
-        solidrectangle(28, 15, 1 + player->hp, 25);
-        //绘制玩家攻击力
-        setfillcolor(0X46CEFF);
-        solidrectangle(28, 45, player->atk + 28, 60);
-        FlushBatchDraw();
-
-    }
-    EndBatchDraw();
+    //绘制玩家分数
+    std::string s3 = "分数:";
+    outtextxy(0, 95, s3.c_str());
+    char s4[50];
+    sprintf_s(s4, 50, "%d", player->score);
+    outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
+    setfillcolor(0XE2961B);
+    solidrectangle(70, 78, 100, 88);
+    //绘制玩家血量
+    setfillcolor(RED);
+    solidrectangle(28, 15, 1 + player->hp, 25);
+    //绘制玩家攻击力
+    setfillcolor(0X46CEFF);
+    solidrectangle(28, 45, player->atk + 28, 60);
 }
 
 // 绘制怪物血条
