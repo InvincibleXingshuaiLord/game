@@ -964,8 +964,43 @@ void DrawGameUI(GameRes* picture, Player*p) {
 
 }
 
-void DrawPlayerInfo() {
-    
+void DrawPlayerInfo(GameRes* picture, Player* p) {
+    BeginBatchDraw();
+    putimage(0, 0, &picture->bgGame);
+    putimagePNG(&picture->bgGame, 0, 10);
+    putimagePNG(&picture->bgGame, 0, 40);
+    while (true) {
+        cleardevice();
+        //设置字体大小和格式
+        settextstyle(25, 0, "微软雅黑");
+        setbkmode(TRANSPARENT);
+        settextcolor(0X000000);
+        //绘制玩家等级
+        std::string s1 = "等级:";
+        outtextxy(0, 70, s1.c_str());
+
+        char s2[50];
+        sprintf_s(s2, 50, "%d", p->level);
+        outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
+
+        //绘制玩家分数
+        std::string s3 = "分数:";
+        outtextxy(0, 95, s3.c_str());
+        char s4[50];
+        sprintf_s(s4, 50, "%d", p->score);
+        outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
+        setfillcolor(0XE2961B);
+        solidrectangle(70, 78, 100, 88);
+        //绘制玩家血量
+        setfillcolor(RED);
+        solidrectangle(28, 15, 1 + p->hp, 25);
+        //绘制玩家攻击力
+        setfillcolor(0X46CEFF);
+        solidrectangle(28, 45, p->atk + 28, 60);
+        FlushBatchDraw();
+
+    }
+    EndBatchDraw();
 }
 
 // 绘制怪物血条
