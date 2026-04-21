@@ -257,7 +257,7 @@ bool CheckButtonClick(Button& btn);
 void DrawButton(Button& btn, const char* text);
 
 // 绘制开始界面
-void DrawStartUI();
+void DrawStartUI(GameRes* picture);
 
 // 绘制玩法介绍界面
 void DrawHelpUI();
@@ -313,7 +313,10 @@ void DrawGameUI();
 // 绘制玩家UI（血条、经验条、等级、分数）
 void DrawPlayerInfo(GameRes* picture, Player* p);
 // 绘制所有实体（玩家、怪物、子弹）
-void DrawEntities();
+void DrawEntities(Player* player, GameRes* picture);
+
+// 绘制怪物血条
+void DrawMonsterHPBar(Monster& monster);
 
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
@@ -323,7 +326,7 @@ int main()
    
     //对象定义区
 	GameRes* picture = new GameRes();
-  
+    Player* player = new Player();
     //对象定义结束
 	srand((unsigned)time(NULL));
     //初始化游戏
@@ -341,7 +344,7 @@ int main()
         //绘制当前界面
         switch (g_curUI)
         {
-        case START:      DrawStartUI();     break;
+        case START:      DrawStartUI(picture);     break;
         case HELP:       DrawHelpUI();      break;
         case SETTING:    DrawSettingUI();   break;
         case TEAM:       DrawTeamUI();      break;
@@ -497,7 +500,7 @@ void Bullet::M_Move(Monster& bigboss) {
 }
 
 void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
-    while (abs(player.x - this->x) > 1 && abs(player.y - this->y > 1)) {
+    while (abs(player.x - this->x) > 1 && abs(player.y - this->y) > 1) {
         int dx = player.x - this->x;
         int dy = player.y - this->y;
         double distance = sqrt(dx * dx + dy * dy);
@@ -573,7 +576,7 @@ void Monster::TakeDamage(int dmg,Player& player) {
     else {
         hp =0;
     }
-    if (hp ==0) {
+    if (hp == 0) {
         OnDead(player);
     }
 }//遇到攻击怪物闪烁 是否需要加
@@ -762,7 +765,6 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
 }
 void DrawStartUI(GameRes* picture) {
 
-    initgraph(1000, 700);
 
     loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
     putimage(0, 0, &picture->imgPlayer);
@@ -962,47 +964,99 @@ void DrawGameUI(GameRes* picture, Player*p) {
 
 }
 
-void DrawPlayerInfo(GameRes* picture, Player* p) {
-    BeginBatchDraw();
-    putimage(0, 0, &picture->bgGame);
-    putimagePNG(&picture->bgGame, 0, 10);
-    putimagePNG(&picture->bgGame, 0, 40);
-    while (true) {
-        cleardevice();
-        //设置字体大小和格式
-        settextstyle(25, 0, "微软雅黑");
-        setbkmode(TRANSPARENT);
-        settextcolor(0X000000);
-        //绘制玩家等级
-        std::string s1 = "等级:";
-        outtextxy(0, 70, s1.c_str());
-      
-        char s2[50];
-        sprintf_s(s2, 50, "%d", p->level);
-        outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
-
-        //绘制玩家分数
-        std::string s3 = "分数:";
-        outtextxy(0, 95, s3.c_str());
-        char s4[50];
-        sprintf_s(s4, 50, "%d", p->score);
-        outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
-        setfillcolor(0XE2961B);
-        solidrectangle(70, 78, 100, 88);
-        //绘制玩家血量
-        setfillcolor(RED);
-        solidrectangle(28, 15, 1 + p->hp, 25);
-        //绘制玩家攻击力
-        setfillcolor(0X46CEFF);
-        solidrectangle(28, 45, p->atk + 28, 60);
-        FlushBatchDraw();
-
-    }
-    EndBatchDraw();
+void DrawPlayerInfo() {
+    
 }
 
-void DrawEntities() {
+// 绘制怪物血条
+void DrawMonsterHPBar(Monster& monster)
+{
+    int barW = monster.w;              // 血条宽度 = 怪物宽度
+    int barH = 6;                      // 血条高度
+    int barX = monster.x;              // 血条X = 怪物X
+    int barY = monster.y - barH - 4;   // 血条在怪物头顶上方
 
+    // 血条背景（深灰）
+    setfillcolor(RGB(80, 80, 80));
+    solidrectangle(barX, barY, barX + barW, barY + barH);
+
+    // 血条前景（根据血量比例染色：绿->黄->红）
+    float ratio = (float)monster.hp / (float)monster.maxHp;
+    COLORREF hpColor = (ratio > 0.5f) ? RGB(0, 200, 0)
+                     : (ratio > 0.25f) ? RGB(220, 200, 0)
+                     : RGB(220, 0, 0);
+    setfillcolor(hpColor);
+    solidrectangle(barX, barY, barX + (int)(barW * ratio), barY + barH);
+
+    // 血条边框
+    setlinecolor(RGB(255, 255, 255));
+    rectangle(barX, barY, barX + barW, barY + barH);
+}
+
+// 绘制所有实体（玩家、怪物、子弹）
+void DrawEntities(Player* player, GameRes* picture)
+{
+   //  1. 绘制玩家 
+    if (player->isInvincible)
+    {
+        // 无敌状态：半透明绘制
+        putimagePNG(&picture->imgPlayer,
+            player->x, player->y,
+            0, 0,
+            (int)picture->imgPlayer.getwidth(),
+            (int)picture->imgPlayer.getheight(),
+            0.5);
+    }
+    else
+    {
+        putimagePNG(&picture->imgPlayer, player->x, player->y);
+    }
+
+    //  2. 绘制子弹
+    for (int i = 0; i < (int)g_bullets.size(); i++)
+    {
+        Bullet& bullet = g_bullets[i];
+        if (!bullet.active) continue;
+
+        putimagePNG(&picture->imgBullet, bullet.x, bullet.y,
+            0, 0,
+            (int)picture->imgBullet.getwidth(),
+            (int)picture->imgBullet.getheight());
+    }
+
+    //  3. 绘制怪物 / BOSS  
+    for (int i = 0; i < (int)g_monsters.size(); i++)
+    {
+        Monster& monster = g_monsters[i];
+        if (!monster.active) continue;
+
+        IMAGE* imgToDraw = nullptr;
+
+        switch (monster.type)
+        {
+        case MONSTER:
+            imgToDraw = &picture->imgMonster;
+            break;
+        case MINI_BOSS:
+            imgToDraw = &picture->imgMiniBoss;
+            break;
+        case FINAL_BOSS:
+            imgToDraw = &picture->imgFinalBoss;
+            break;
+        default:
+            imgToDraw = &picture->imgMonster;
+            break;
+        }
+
+        // 绘制怪物贴图
+        putimagePNG(imgToDraw, monster.x, monster.y,
+            0, 0,
+            (int)imgToDraw->getwidth(),
+            (int)imgToDraw->getheight());
+
+        // 绘制血条
+        DrawMonsterHPBar(monster);
+    }
 }
 //绘制一帧逻辑
 // void test() {
