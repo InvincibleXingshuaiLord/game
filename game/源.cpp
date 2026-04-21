@@ -332,14 +332,14 @@ int main()
 	srand((unsigned)time(NULL));
     //初始化游戏
     GameInit(picture);
-
+    //开始批量绘图，减少闪烁
+    BeginBatchDraw();
     //游戏主循环
     while (g_isRun)
     {
         //处理鼠标和键盘
         InputUpdate();
-        //开始批量绘图，减少闪烁
-        BeginBatchDraw();
+        
         cleardevice();
 
         //绘制当前界面
@@ -359,10 +359,11 @@ int main()
         case PAUSE:      DrawPauseUI( picture);     break;
         case SETTLEMENT: DrawSettlementUI( picture, player); break;
         }
-
-        //结束批量绘图，显示画面
-        EndBatchDraw();
+		FlushBatchDraw();
+        
     }
+    //结束批量绘图，显示画面
+    EndBatchDraw();
     g_res.Free();
     closegraph();
 	picture->Free();
