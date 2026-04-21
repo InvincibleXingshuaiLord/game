@@ -217,7 +217,7 @@ int        g_spawnTimer;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
 
-// 开始界面-开始游戏按钮(开始界面定义了每个功能图形（正矩形）的坐标变量，可根据坐标编写按钮功能，简单很多)
+// 开始界面-开始游戏按钮(开始界面定义了每个功能图形（正矩形）的坐标变量，可根据坐标编写按钮功能，简单很多,下面的都一样)
 Button     btnStart;
 
 // 开始界面-玩法介绍按钮
@@ -269,7 +269,7 @@ void DrawSettingUI();
 void DrawTeamUI();
 
 // 绘制暂停界面
-void DrawPauseUI();
+void DrawPauseUI(GameRes* picture);
 
 // 绘制结算界面
 void DrawSettlementUI(GameRes* picture, Player* player);
@@ -355,7 +355,7 @@ int main()
             //绘制游戏画面
              DrawGameUI( picture, player);
             break;
-        case PAUSE:      DrawPauseUI();     break;
+        case PAUSE:      DrawPauseUI( picture);     break;
         case SETTLEMENT: DrawSettlementUI( picture, player); break;
         }
 
@@ -600,13 +600,13 @@ void GameRes::Load() {
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgTeam, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgPause, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
-    loadimage(&this->bgSettlement, "photo/sl1.jpg", 1000, 800);
+    loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
     loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
     loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
-    
+   
    
 }
 
@@ -805,9 +805,28 @@ void DrawTeamUI() {
 
 }
 
-void DrawPauseUI() {
+void DrawPauseUI(GameRes* picture) {
+  
+    putimage(0, 0, &picture->bgPause);
+    setbkmode(TRANSPARENT);
+    settextstyle(35, 20, "隶书");
+    settextcolor(0X000000);
+    char s[50] = "哎呦！你干嘛！";
+    outtextxy((1000 - textwidth(s)) / 2, 30, s);
 
+    int rx=450, ry[3],rh=50,rw=100;
+    ry[0] = 200;
+    ry[1] = 280;
+    ry[2] = 360;
+    //	绘制重新开始
+    functionalshape(rx, ry[0], rw, rh, "重新开始");
+    //绘制返回菜单
+    functionalshape(rx, ry[1], rw, rh, "返回菜单");
+    //	//绘制继续游戏
+    functionalshape(rx, ry[2], rw, rh,  "继续游戏");
+    
 }
+
 
 void DrawSettlementUI(GameRes* picture, Player* player) {
    //失败界面
@@ -835,9 +854,12 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
-        functionalshape(280, 450, 100, 50, "重新开始");
+        int rx[2], ry=450, rw = 100, rh = 50;
+        rx[0] = 280;
+        rx[1] = 680;
+        functionalshape(rx[0], ry, rw, rh, "重新开始");
         //绘制返回菜单
-        functionalshape(680, 450, 100, 50, "返回菜单");
+        functionalshape(rx[1], ry, rw, rh, "返回菜单");
     }
 
     //绘制胜利界面
