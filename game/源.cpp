@@ -502,13 +502,12 @@ void Bullet::M_Move(Monster& bigboss) {
 }
 
 void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
-    while (abs(player.x - this->x) > 1 && abs(player.y - this->y) > 1) {
-        int dx = player.x - this->x;
-        int dy = player.y - this->y;
-        double distance = sqrt(dx * dx + dy * dy);
-        this->x += (dx / distance) * this->speed;
-        this->y += (dy / distance) * this->speed;
-    }
+    int dx = player.x - this->x;
+    int dy = player.y - this->y;
+    double distance = sqrt(dx * dx + dy * dy);
+    this->x += (dx / distance) * this->speed;
+    this->y += (dy / distance) * this->speed;
+    if (distance < 1.0) return;
 }
 
 bool Bullet::CheckBorder() {
@@ -770,8 +769,8 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
 void DrawStartUI(GameRes* picture) {
 
 
-    loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
-    putimage(0, 0, &picture->imgPlayer);
+    //loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
+    putimage(0, 0, &picture->bgStart);
 
     int rx, ry[5], rh, rw, i;
     rx = 600;
@@ -792,7 +791,7 @@ void DrawStartUI(GameRes* picture) {
     settextcolor(0X000000);
     char s[50] = "追上我把命都给你！";
     outtextxy((1000 - textwidth(s)) / 2, 30, s);
-    getchar();
+   
 }
 
 void DrawHelpUI() {
