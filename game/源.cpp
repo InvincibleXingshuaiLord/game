@@ -311,8 +311,7 @@ void CheckGameEnd();
 void DrawGameUI();
 
 // 绘制玩家UI（血条、经验条、等级、分数）
-void DrawPlayerInfo();
-
+void DrawPlayerInfo(GameRes* picture, Player* p);
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
