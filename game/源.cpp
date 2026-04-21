@@ -601,10 +601,12 @@ void GameRes::Load() {
 	loadimage(&this->bgTeam, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgPause, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgSettlement, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
+    loadimage(&this->bgSettlement, "photo/sl1.jpg", 1000, 800);
     loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
     loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
     loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
+    
    
 }
 
@@ -807,8 +809,70 @@ void DrawPauseUI() {
 
 }
 
-void DrawSettlementUI() {
+void DrawSettlementUI(GameRes* picture, Player* player) {
+   //失败界面
+    if (g_isGameOver == true) {
+      //绘制失败文字
+        putimage(0, 0, &picture->bgSettlement);
+        setbkmode(TRANSPARENT);
+        settextstyle(65, 50, "隶书");
+        settextcolor(0XFFFFFF);
+        char s[50] = "蔡就多练!";
+        outtextxy((1000 - textwidth(s)) / 2, 30, s);
+        settextstyle(50, 0, "隶书");
+        //绘制结算等级
+        std::string s1 = "等级:";
+        outtextxy(0, 70, s1.c_str());
+        char s2[50];
+        sprintf_s(s2, 50, "%d", player->level);
+        outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
 
+        //绘制结算分数
+        std::string s3 = "分数:";
+        outtextxy(0, 115, s3.c_str());
+        char s4[50];
+        sprintf_s(s4, 50, "%d",player->score);
+        outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
+
+        //绘制重新开始
+        functionalshape(280, 450, 100, 50, "重新开始");
+        //绘制返回菜单
+        functionalshape(680, 450, 100, 50, "返回菜单");
+    }
+
+    //绘制胜利界面
+    if (g_isWin==true) {
+        //绘制胜利文字
+        putimage(0, 0, &picture->bgSettlement);
+        setbkmode(TRANSPARENT);
+        settextstyle(35, 20, "隶书");
+        settextcolor(0XFFFFFF);
+        char s[50] = "恭喜练习时长连年半的你，征服了所有黑粉！";
+        outtextxy((1000 - textwidth(s)) / 2, 30, s);
+        char s11[50] = "别问为什么，问就是只因你太美！";
+        outtextxy((1000 - textwidth(s11)) / 2, 60, s11);
+
+        settextstyle(50, 0, "隶书");
+        //绘制结算等级
+        std::string s1 = "等级:";
+        outtextxy(0, 70, s1.c_str());
+        char s2[50];
+        sprintf_s(s2, 50, "%d", player->level);
+        outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
+
+        //绘制结算分数
+        std::string s3 = "分数:";
+        outtextxy(0, 115, s3.c_str());
+        char s4[50];
+        sprintf_s(s4, 50, "%d", player->score);
+        outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
+
+        //绘制重新开始
+        functionalshape(280, 450, 100, 50, "重新开始");
+        //绘制返回菜单
+        functionalshape(680, 450, 100, 50, "返回菜单");
+    }
+   
 }
 
 // 游戏逻辑每帧更新
