@@ -308,7 +308,7 @@ void UpdateInvincible();
 void CheckGameEnd();
 
 // 绘制游戏界面（场景、实体、UI）
-void DrawGameUI();
+void DrawGameUI(GameRes* picture, Player* p);
 
 // 绘制玩家UI（血条、经验条、等级、分数）
 void DrawPlayerInfo(GameRes* picture, Player* p);
