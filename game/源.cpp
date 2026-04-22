@@ -217,7 +217,7 @@ int        g_spawnTimer;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
 
-// 开始界面-开始游戏按钮(开始界面定义了每个功能图形（正矩形）的坐标变量，可根据坐标编写按钮功能，简单很多,下面的都一样)
+// 开始界面-开始游戏按钮
 Button     btnStart;
 
 // 开始界面-玩法介绍按钮
@@ -231,6 +231,9 @@ Button     btnTeam;
 
 // 各子界面-返回按钮
 Button     btnBack;
+
+// 游戏中界面-暂停按钮（小康补充）
+Button btnPause;
 
 // 暂停界面-继续游戏按钮
 Button     btnResume;
@@ -822,23 +825,24 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
 void DrawStartUI(GameRes* picture) {
 
 
-    //loadimage(&picture->imgPlayer, "photo/kk1.jpg", 1100, 700);//开始界面壁纸
+    
     putimage(0, 0, &picture->bgStart);
 
     int rx, ry[5], rh, rw, i;
-    rx = 600;
-    ry[0] = 280;
-    rw = 130;
-    rh = 50;
-    for (i = 1; i < 5; i++) {
-        ry[i] = ry[i - 1] + rh + 10;
-    }
+    btnStart.x = btnHelp.x= btnTeam.x= btnSetting.x= btnExit.x=600;
+    btnStart.y = 280;
+    btnStart.w = btnHelp.w= btnTeam.w= btnSetting.w= btnExit.w=130;
+    btnStart.h = btnHelp.h= btnTeam.h= btnSetting.h= btnExit.h=50;
+    btnHelp.y = btnStart.y + 10 + btnStart.h;
+    btnTeam.y = btnHelp.y + 10 + btnHelp.h;
+    btnSetting.y = btnTeam.y + btnTeam.h + 10;
+    btnExit.y = btnSetting.y + btnSetting.h + 10;
     //按钮图形绘制
-    functionalshape(rx, ry[0], rw, rh, "开始游戏");
-    functionalshape(rx, ry[1], rw, rh, "玩法介绍");
-    functionalshape(rx, ry[2], rw, rh, "团队介绍");
-    functionalshape(rx, ry[3], rw, rh, "游戏设置");
-    functionalshape(rx, ry[4], rw, rh, "退出游戏");
+    functionalshape(btnStart.x, btnStart.y, btnStart.w, btnStart.h, "开始游戏");
+    functionalshape(btnHelp.x, btnHelp.y, btnHelp.w, btnHelp.h, "玩法介绍");
+    functionalshape(btnTeam.x, btnTeam.y, btnTeam.w, btnTeam.h, "团队介绍");
+    functionalshape(btnSetting.x, btnSetting.y, btnSetting.w, btnSetting.h, "游戏设置");
+    functionalshape(btnExit.x, btnExit.y, btnExit.w, btnExit.h, "退出游戏");
     setbkmode(TRANSPARENT);
     settextstyle(50, 30, "隶书");
     settextcolor(0X000000);
@@ -868,16 +872,18 @@ void DrawPauseUI(GameRes* picture) {
     char s[50] = "哎呦！你干嘛！";
     outtextxy((1000 - textwidth(s)) / 2, 30, s);
 
-    int rx=450, ry[3],rh=50,rw=100;
-    ry[0] = 200;
-    ry[1] = 280;
-    ry[2] = 360;
+    btnBack.x = btnRestart.x = btnResume.x = 450;
+    btnBack.h = btnRestart.h = btnResume.h = 50;
+    btnBack.w = btnRestart.w = btnResume.w = 100;
+    btnRestart.y = 200;
+    btnBack.y = 280;
+    btnResume.y = 360;
     //	绘制重新开始
-    functionalshape(rx, ry[0], rw, rh, "重新开始");
+    functionalshape(btnRestart.x, btnRestart.y, btnRestart.w, btnRestart.h, "重新开始");
     //绘制返回菜单
-    functionalshape(rx, ry[1], rw, rh, "返回菜单");
+    functionalshape(btnBack.x, btnBack.y, btnBack.w, btnBack.h, "返回菜单");
     //	//绘制继续游戏
-    functionalshape(rx, ry[2], rw, rh,  "继续游戏");
+    functionalshape(btnResume.x, btnResume.y, btnResume.w, btnResume.h,  "继续游戏");
     
 }
 
@@ -908,12 +914,14 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
-        int rx[2], ry=450, rw = 100, rh = 50;
-        rx[0] = 280;
-        rx[1] = 680;
-        functionalshape(rx[0], ry, rw, rh, "重新开始");
+        btnRestart.y = btnBack.y=450;
+        btnRestart.w = btnBack.w=100;
+        btnRestart.h = btnBack.h= 50;
+        btnRestart.x = 280;
+        btnBack.x = 680;
+        functionalshape(btnRestart.x, btnRestart.y, btnRestart.w, btnRestart.h, "重新开始");
         //绘制返回菜单
-        functionalshape(rx[1], ry, rw, rh, "返回菜单");
+        functionalshape(btnBack.x, btnBack.y, btnBack.w, btnBack.h, "返回菜单");
     }
 
     //绘制胜利界面
@@ -944,9 +952,14 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
-        functionalshape(280, 450, 100, 50, "重新开始");
+        btnRestart.y = btnBack.y = 450;
+        btnRestart.w = btnBack.w = 100;
+        btnRestart.h = btnBack.h = 50;
+        btnRestart.x = 280;
+        btnBack.x = 680;
+        functionalshape(btnRestart.x, btnRestart.y, btnRestart.w, btnRestart.h, "重新开始");
         //绘制返回菜单
-        functionalshape(680, 450, 100, 50, "返回菜单");
+        functionalshape(btnBack.x, btnBack.y, btnBack.w, btnBack.h, "返回菜单");
     }
    
 }
@@ -1098,7 +1111,11 @@ void DrawGameUI(GameRes* picture, Player* player) {
     DrawPlayerInfo(picture, player);
 	DrawEntities(player, picture);
     //暂停按钮绘制
-    functionalshape(920, 620, 80, 80, "暂停游戏");
+    btnPause.x = 920;
+    btnPause.y = 620;
+    btnPause.w = 80;
+    btnPause.h = 80;
+    functionalshape(btnPause.x, btnPause.y, btnPause.w, btnPause.h, "暂停游戏");
 
 }
 
