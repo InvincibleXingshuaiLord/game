@@ -263,7 +263,7 @@ void DrawButton(Button& btn, const char* text);
 void DrawStartUI(GameRes* picture);
 
 // 绘制玩法介绍界面
-void DrawHelpUI();
+void DrawHelpUI(GameRes* picture);
 
 // 绘制设置界面
 void DrawSettingUI();
@@ -323,6 +323,8 @@ void DrawMonsterHPBar(Monster& monster);
 
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
+//用于玩法介绍界面文字绘制
+void drawtext(int x, int y, std::string s);
 
 int main()
 {
@@ -349,7 +351,7 @@ int main()
         switch (g_curUI)
         {
         case START:      DrawStartUI(picture);     break;
-        case HELP:       DrawHelpUI();      break;
+        case HELP:       DrawHelpUI( picture);      break;
         case SETTING:    DrawSettingUI();   break;
         case TEAM:       DrawTeamUI();      break;
         case PLAY:
@@ -600,17 +602,15 @@ void GameRes::Load() {
 	loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
 	loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgHelp, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgTeam, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgGame, "photo/kk1.jpg", 1100, 700);
+	loadimage(&this->bgTeam, "photo/kk1.jpg", 1000, 700);
+	loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
     loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
-    loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
     loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
     loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
-   
    
 }
 
@@ -848,11 +848,53 @@ void DrawStartUI(GameRes* picture) {
     settextcolor(0X000000);
     char s[50] = "追上我把命都给你！";
     outtextxy((1000 - textwidth(s)) / 2, 30, s);
+    setfillcolor(0XFFFFFF);
+
+
+   
    
 }
+//用于玩法介绍界面文字绘制
+void drawtext(int x, int y, std::string s) {
+    setbkmode(TRANSPARENT);
+    settextstyle(20, 0, "楷书");
+    settextcolor(0XFFFFFF);
+    outtextxy(x, y, s.c_str());
+}
+void DrawHelpUI(GameRes* picture) {
+    //绘制字体和背景、颜色
+    putimage(0, 0, &picture->bgHelp);
+    setbkmode(TRANSPARENT);
+    settextstyle(25, 0, "微软雅黑");
+    settextcolor(0XFFFFFF);
+    //绘制介绍内容
+    drawtext(0, 30, "背景：");
+    drawtext(46, 30, "一名被世人嘲笑却不做回应，默默用实力证明的坤坤，一生与篮球为伴，殊不知他却只有一次证明机会，");
+    drawtext(46, 60, "失败了（死亡）将彻底坠入深渊，一切都得从头开始，重新面对充满未知的挑战");
+    drawtext(0, 90, "坤坤：");
+    drawtext(46, 90, "初始血量100点，每升1级提高最大生命值10点，并且回复10点生命值。");
+    drawtext(46, 120, "每级50点经验，每5级召唤小boss，20级召唤大boss。");
+    drawtext(46, 150, "坤坤攻击方式为向鼠标方向射出子弹，攻击间隔为0.1秒，伤害为1点，每提升一级增加1点伤害。");
 
-void DrawHelpUI() {
+    drawtext(0, 180, "小怪物:");
+    drawtext(80, 180, "血量5点 ,伤害2点");
+    drawtext(0, 210, "小BOSS:");
+    drawtext(80, 210, "200点血量，伤害10点，每隔一定时间召唤两个小怪物在小boss左右两边");
+    drawtext(0, 240, "大BOSS:");
+    drawtext(80, 240, "913点血量伤害100点，会向玩家发射子弹，与玩家碰撞，减少玩家血量，玩家获得短暂无敌");
 
+    //绘制返回菜单
+    btnExit.x = 900;
+    btnExit.y= 650;
+    btnExit.w = 100;
+    btnExit.h = 50;  
+     setfillcolor(0XFFFFFF);
+    solidrectangle(btnExit.x, btnExit.y, btnExit.x+btnExit.w, btnExit.y + btnExit.h);
+    setbkmode(TRANSPARENT);
+    settextstyle(30, 10, "微软雅黑");
+    settextcolor(0X000000);
+    std::string s = "返回菜单";
+    outtextxy(btnExit.x + (btnExit.w - textwidth(s.c_str())) / 2, btnExit.y + (btnExit.h - textheight(s.c_str())) / 2, s.c_str());
 }
 
 void DrawSettingUI() {
