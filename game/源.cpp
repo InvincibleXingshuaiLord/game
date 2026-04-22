@@ -440,7 +440,7 @@ void Player::Attack() {
     {
         Bullet bullet;
         //从玩家中心发射
-        bullet.Init(x + w / 2, y + h / 2);
+        bullet.Init(x + w / 2, y + h / 2, 0);
         g_bullets.push_back(bullet);
     }
 }
@@ -481,7 +481,7 @@ Bullet::Bullet() {
 
 void Bullet::Init(int px, int py,int pflag) {
     this->x = px, this->y = py;//更新子弹初始坐标
-    this->flag = flag;
+    this->flag = pflag;
     this->active = true;//更新子弹存在状态
 }
 
@@ -571,7 +571,7 @@ void Monster::TrackPlayer(Player& player) {
 void Monster::ShootMonsterBullet(Player& player) {
  if (!active) return;
  Bullet bullet;
- bullet.Init(x, y); 
+ bullet.Init(x, y, 1); 
  bullet.speed = 3;   
  bullet.atk = 1;     
  bullet.active = true;
@@ -1132,7 +1132,16 @@ void Collide_BulletMonster() {
 }
 
 void Collide_PlayerMonster() {
+    for (auto& m : g_monsters) {
+        if (!m.active) continue;
 
+        bool collide = (g_player.x < m.x + m.w) && (g_player.x + g_player.w > m.x) &&
+            (g_player.y < m.y + m.h) && (g_player.y + g_player.h > m.y);
+
+        if (collide) {
+            g_player.TakeDamage(10);
+        }
+    }
 }
 
 void CheckLevelUp() {
@@ -1143,7 +1152,11 @@ void CheckLevelUp() {
 }
 
 void UpdateInvincible() {
-
+    if (g_player.isInvincible) {    //玩家处于无敌状态时，才需要计时判断
+        if (GetTickCount() - g_player.invincibleTimer > INVINCIBLE_TIME) {
+            g_player.isInvincible = false;
+        }
+    }
 }
 
 // 检测游戏结束条件（胜利/失败）
