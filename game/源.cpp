@@ -247,7 +247,7 @@ Button     btnRestart;
 Button     btnExit;
 
 // 游戏初始化（窗口、资源、变量初始值）
-void GameInit(GameRes* picture);
+void GameInit();
 
 // 重置游戏数据（重新开始一局）
 void GameReset();
@@ -262,10 +262,10 @@ bool CheckButtonClick(Button& btn);
 void DrawButton(Button& btn, const char* text);
 
 // 绘制开始界面
-void DrawStartUI(GameRes* picture);
+void DrawStartUI();
 
 // 绘制玩法介绍界面
-void DrawHelpUI(GameRes* picture);
+void DrawHelpUI();
 
 // 绘制设置界面
 void DrawSettingUI();
@@ -274,10 +274,10 @@ void DrawSettingUI();
 void DrawTeamUI();
 
 // 绘制暂停界面
-void DrawPauseUI(GameRes* picture);
+void DrawPauseUI();
 
 // 绘制结算界面
-void DrawSettlementUI(GameRes* picture, Player* player);
+void DrawSettlementUI();
 
 // 游戏逻辑每帧更新
 void GameUpdate();
@@ -313,12 +313,12 @@ void UpdateInvincible();
 void CheckGameEnd();
 
 // 绘制游戏界面（场景、实体、UI）
-void DrawGameUI(GameRes* picture, Player* p);
+void DrawGameUI();
 
 // 绘制玩家UI（血条、经验条、等级、分数）
-void DrawPlayerInfo(GameRes* picture, Player* p);
+void DrawPlayerInfo();
 // 绘制所有实体（玩家、怪物、子弹）
-void DrawEntities(Player* player, GameRes* picture);
+void DrawEntities();
 
 // 绘制怪物血条
 void DrawMonsterHPBar(Monster& monster);
@@ -332,13 +332,11 @@ int main()
 {
    
     //对象定义区
-	GameRes* picture = new GameRes();
-    Player* player = new Player();
     //对象定义结束
 
 	srand((unsigned)time(NULL));
     //初始化游戏
-    GameInit(picture);
+    GameInit();
     //开始批量绘图，减少闪烁
     BeginBatchDraw();
     //游戏主循环
@@ -352,8 +350,8 @@ int main()
         //绘制当前界面
         switch (g_curUI)
         {
-        case START:      DrawStartUI(picture);     break;
-        case HELP:       DrawHelpUI( picture);      break;
+        case START:      DrawStartUI();     break;
+        case HELP:       DrawHelpUI();      break;
         case SETTING:    DrawSettingUI();   break;
         case TEAM:       DrawTeamUI();      break;
         case PLAY:
@@ -361,10 +359,10 @@ int main()
             if (!g_isPause)
                 GameUpdate();
             //绘制游戏画面
-             DrawGameUI( picture, player);
+             DrawGameUI();
             break;
-        case PAUSE:      DrawPauseUI( picture);     break;
-        case SETTLEMENT: DrawSettlementUI( picture, player); break;
+        case PAUSE:      DrawPauseUI();     break;
+        case SETTLEMENT: DrawSettlementUI(); break;
         }
 		FlushBatchDraw();
         
@@ -373,7 +371,6 @@ int main()
     EndBatchDraw();
     g_res.Free();
     closegraph();
-	picture->Free();
 
     return 0;
 }
@@ -622,7 +619,7 @@ void GameRes::Free() {
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
-void GameInit(GameRes* picture)
+void GameInit()
 {
     // 创建图形窗口
     initgraph(WIN_WIDTH, WIN_HEIGHT);
@@ -633,7 +630,7 @@ void GameInit(GameRes* picture)
     srand((unsigned)time(NULL));
 
 	// 加载游戏资源
-	picture->Load();
+	g_res.Load();
 
     // 初始化游戏状态
     g_isRun = true;
@@ -769,11 +766,11 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
     settextcolor(0XFFFFFF);
     outtextxy(rx + (rw - textwidth(s.c_str())) / 2, ry + (rh - textheight(s.c_str())) / 2, s.c_str());
 }
-void DrawStartUI(GameRes* picture) {
+void DrawStartUI() {
 
 
     
-    putimage(0, 0, &picture->bgStart);
+    putimage(0, 0, &g_res.bgStart);
 
     int rx, ry[5], rh, rw, i;
     btnStart.x = btnHelp.x= btnTeam.x= btnSetting.x= btnExit.x=600;
@@ -808,9 +805,9 @@ void drawtext(int x, int y, std::string s) {
     settextcolor(0XFFFFFF);
     outtextxy(x, y, s.c_str());
 }
-void DrawHelpUI(GameRes* picture) {
+void DrawHelpUI() {
     //绘制字体和背景、颜色
-    putimage(0, 0, &picture->bgHelp);
+    putimage(0, 0, &g_res.bgHelp);
     setbkmode(TRANSPARENT);
     settextstyle(25, 0, "微软雅黑");
     settextcolor(0XFFFFFF);
@@ -855,9 +852,9 @@ void DrawTeamUI() {
 
 }
 
-void DrawPauseUI(GameRes* picture) {
+void DrawPauseUI() {
   
-    putimage(0, 0, &picture->bgPause);
+    putimage(0, 0, &g_res.bgPause);
     setbkmode(TRANSPARENT);
     settextstyle(35, 20, "隶书");
     settextcolor(0X000000);
@@ -880,11 +877,11 @@ void DrawPauseUI(GameRes* picture) {
 }
 
 
-void DrawSettlementUI(GameRes* picture, Player* player) {
+void DrawSettlementUI() {
    //失败界面
     if (g_isGameOver == true) {
       //绘制失败文字
-        putimage(0, 0, &picture->bgSettlement);
+        putimage(0, 0, &g_res.bgSettlement);
         setbkmode(TRANSPARENT);
         settextstyle(65, 50, "隶书");
         settextcolor(0XFFFFFF);
@@ -895,14 +892,14 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
         std::string s1 = "等级:";
         outtextxy(0, 70, s1.c_str());
         char s2[50];
-        sprintf_s(s2, 50, "%d", player->level);
+        sprintf_s(s2, 50, "%d", g_player.level);
         outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
 
         //绘制结算分数
         std::string s3 = "分数:";
         outtextxy(0, 115, s3.c_str());
         char s4[50];
-        sprintf_s(s4, 50, "%d",player->score);
+        sprintf_s(s4, 50, "%d",g_player.score);
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
@@ -919,7 +916,7 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
     //绘制胜利界面
     if (g_isWin==true) {
         //绘制胜利文字
-        putimage(0, 0, &picture->bgSettlement);
+        putimage(0, 0, &g_res.bgSettlement);
         setbkmode(TRANSPARENT);
         settextstyle(35, 20, "隶书");
         settextcolor(0XFFFFFF);
@@ -933,14 +930,14 @@ void DrawSettlementUI(GameRes* picture, Player* player) {
         std::string s1 = "等级:";
         outtextxy(0, 70, s1.c_str());
         char s2[50];
-        sprintf_s(s2, 50, "%d", player->level);
+        sprintf_s(s2, 50, "%d", g_player.level);
         outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
 
         //绘制结算分数
         std::string s3 = "分数:";
         outtextxy(0, 115, s3.c_str());
         char s4[50];
-        sprintf_s(s4, 50, "%d", player->score);
+        sprintf_s(s4, 50, "%d", g_player.score);
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
@@ -1141,11 +1138,11 @@ void CheckGameEnd()
     }
 }
 
-void DrawGameUI(GameRes* picture, Player* player) {
+void DrawGameUI() {
 
-    putimage(0, 0, &picture->bgGame);
-    DrawPlayerInfo(picture, player);
-	DrawEntities(player, picture);
+    putimage(0, 0, &g_res.bgGame);
+    DrawPlayerInfo();
+	DrawEntities();
     //暂停按钮绘制
     btnPause.x = 920;
     btnPause.y = 620;
@@ -1155,10 +1152,10 @@ void DrawGameUI(GameRes* picture, Player* player) {
 
 }
 
-void DrawPlayerInfo(GameRes* picture, Player* player) {
+void DrawPlayerInfo() {
   
-    putimage(0, 10, &picture->imgAx);
-    putimage(0, 40, &picture->imgGj);
+    putimage(0, 10, &g_res.imgAx);
+    putimage(0, 40, &g_res.imgGj);
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
@@ -1167,7 +1164,7 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     std::string s1 = "等级:";
     outtextxy(0, 70, s1.c_str());
     char s2[50];
-    sprintf_s(s2, 50, "%d", player->level);
+    sprintf_s(s2, 50, "%d", g_player.level);
     outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
     setfillcolor(0XE2961B);
     solidrectangle(70, 78, 100, 88);
@@ -1176,15 +1173,15 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     std::string s3 = "分数:";
     outtextxy(0, 95, s3.c_str());
     char s4[50];
-    sprintf_s(s4, 50, "%d", player->score);
+    sprintf_s(s4, 50, "%d", g_player.score);
     outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
     
     //绘制玩家血量
     setfillcolor(RED);
-    solidrectangle(28, 15, 1 + player->hp, 25);
+    solidrectangle(28, 15, 1 + g_player.hp, 25);
     //绘制玩家攻击力
     setfillcolor(0XFFFFFF);
-    solidrectangle(28, 45, player->atk + 28, 60);
+    solidrectangle(28, 45, g_player.atk + 28, 60);
 }
 
 // 绘制怪物血条
@@ -1213,22 +1210,22 @@ void DrawMonsterHPBar(Monster& monster)
 }
 
 // 绘制所有实体（玩家、怪物、子弹）
-void DrawEntities(Player* player, GameRes* picture)
+void DrawEntities()
 {
    //  1. 绘制玩家 
-    if (player->isInvincible)
+    if (g_player.isInvincible)
     {
         // 无敌状态：半透明绘制
-        putimagePNG(&picture->imgPlayer,
-            player->x, player->y,
+        putimagePNG(&g_res.imgPlayer,
+            g_player.x, g_player.y,
             0, 0,
-            (int)picture->imgPlayer.getwidth(),
-            (int)picture->imgPlayer.getheight(),
+            (int)g_res.imgPlayer.getwidth(),
+            (int)g_res.imgPlayer.getheight(),
             0.5);
     }
     else
     {
-        putimagePNG(&picture->imgPlayer, player->x, player->y);
+        putimagePNG(&g_res.imgPlayer, g_player.x, g_player.y);
     }
 
     //  2. 绘制子弹
@@ -1237,10 +1234,10 @@ void DrawEntities(Player* player, GameRes* picture)
         Bullet& bullet = g_bullets[i];
         if (!bullet.active) continue;
 
-        putimagePNG(&picture->imgBullet, bullet.x, bullet.y,
+        putimagePNG(&g_res.imgBullet, bullet.x, bullet.y,
             0, 0,
-            (int)picture->imgBullet.getwidth(),
-            (int)picture->imgBullet.getheight());
+            (int)g_res.imgBullet.getwidth(),
+            (int)g_res.imgBullet.getheight());
     }
 
     //  3. 绘制怪物 / BOSS  
@@ -1254,16 +1251,16 @@ void DrawEntities(Player* player, GameRes* picture)
         switch (monster.type)
         {
         case MONSTER:
-            imgToDraw = &picture->imgMonster;
+            imgToDraw = &g_res.imgMonster;
             break;
         case MINI_BOSS:
-            imgToDraw = &picture->imgMiniBoss;
+            imgToDraw = &g_res.imgMiniBoss;
             break;
         case FINAL_BOSS:
-            imgToDraw = &picture->imgFinalBoss;
+            imgToDraw = &g_res.imgFinalBoss;
             break;
         default:
-            imgToDraw = &picture->imgMonster;
+            imgToDraw = &g_res.imgMonster;
             break;
         }
 
