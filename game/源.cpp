@@ -176,7 +176,8 @@ public:
     IMAGE bgGame;            //游戏界面
     IMAGE bgPause;           //暂停界面
     IMAGE bgSettlement;      //结算界面
-
+    IMAGE imgAx;      // 游戏界面玩家血量图标
+    IMAGE imgGj;      // 游戏界面玩家攻击力图标
 public:
     void Load();     //加载所有图片
     void Free();     //释放图片
@@ -611,8 +612,8 @@ void GameRes::Load() {
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
     loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
-    loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
-    loadimage(&this->bgGame, "photo/gj2.png", 25, 25);
+    loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
+    loadimage(&this-> imgGj, "photo/gj2.png", 25, 25);
    
 }
 
@@ -884,6 +885,8 @@ void DrawHelpUI(GameRes* picture) {
     drawtext(80, 210, "200点血量，伤害10点，每隔一定时间召唤两个小怪物在小boss左右两边");
     drawtext(0, 240, "大BOSS:");
     drawtext(80, 240, "913点血量伤害100点，会向玩家发射子弹，与玩家碰撞，减少玩家血量，玩家获得短暂无敌");
+    drawtext(0, 640, "坤坤攻击方式:");
+  	drawtext(140, 640, "点击鼠标左键发射子弹，方向为与鼠标点击坐标的连线。");
     drawtext(0, 670, "控制坤坤移动方式:");
     drawtext(180, 670, "点击'W'向上移动，点击'D'向下移动，点击'A'向左移动，点击'D'向右移动");
     //绘制返回菜单
@@ -1209,6 +1212,9 @@ void DrawGameUI(GameRes* picture, Player* player) {
 }
 
 void DrawPlayerInfo(GameRes* picture, Player* player) {
+  
+    putimage(0, 10, &picture->imgAx);
+    putimage(0, 40, &picture->imgGj);
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
