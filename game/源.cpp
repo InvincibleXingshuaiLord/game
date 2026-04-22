@@ -1167,7 +1167,7 @@ void DrawPlayerInfo() {
     sprintf_s(s2, 50, "%d", g_player.level);
     outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
     setfillcolor(0XE2961B);
-    solidrectangle(70, 78, 70+player->exp, 88);
+    solidrectangle(70, 78, 70+g_player.exp, 88);
 
     //绘制玩家分数
     std::string s3 = "分数:";
