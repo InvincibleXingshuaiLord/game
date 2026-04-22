@@ -607,12 +607,12 @@ void GameRes::Load() {
 	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgTeam, "photo/kk1.jpg", 1000, 700);
-	loadimage(&this->bgGame, "photo/kk4.jpg", 1000, 700);
+	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
     loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->bgGame, "photo/ax1.png", 25, 25);
-    loadimage(&this->bgGame, "photo/gj1.png", 25, 25);
+    loadimage(&this->bgGame, "photo/gj2.png", 25, 25);
    
 }
 
@@ -884,7 +884,8 @@ void DrawHelpUI(GameRes* picture) {
     drawtext(80, 210, "200点血量，伤害10点，每隔一定时间召唤两个小怪物在小boss左右两边");
     drawtext(0, 240, "大BOSS:");
     drawtext(80, 240, "913点血量伤害100点，会向玩家发射子弹，与玩家碰撞，减少玩家血量，玩家获得短暂无敌");
-
+    drawtext(0, 670, "控制坤坤移动方式:");
+    drawtext(180, 670, "点击'W'向上移动，点击'D'向下移动，点击'A'向左移动，点击'D'向右移动");
     //绘制返回菜单
     btnExit.x = 900;
     btnExit.y= 650;
@@ -1198,14 +1199,15 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
-    settextcolor(0X000000);
+    settextcolor(0XFFFFFF);
     //绘制玩家等级
     std::string s1 = "等级:";
     outtextxy(0, 70, s1.c_str());
-
     char s2[50];
     sprintf_s(s2, 50, "%d", player->level);
     outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
+    setfillcolor(0XE2961B);
+    solidrectangle(70, 78, 100, 88);
 
     //绘制玩家分数
     std::string s3 = "分数:";
@@ -1213,13 +1215,12 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     char s4[50];
     sprintf_s(s4, 50, "%d", player->score);
     outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
-    setfillcolor(0XE2961B);
-    solidrectangle(70, 78, 100, 88);
+    
     //绘制玩家血量
     setfillcolor(RED);
     solidrectangle(28, 15, 1 + player->hp, 25);
     //绘制玩家攻击力
-    setfillcolor(0X46CEFF);
+    setfillcolor(0XFFFFFF);
     solidrectangle(28, 45, player->atk + 28, 60);
 }
 
