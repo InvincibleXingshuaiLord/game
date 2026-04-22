@@ -433,6 +433,14 @@ void Player::LimitBorder() {
 }
 
 void Player::Attack() {
+    //鼠标左键攻击
+    if (msg.message == WM_LBUTTONDOWN)
+    {
+        Bullet bullet;
+        //从玩家中心发射
+        bullet.Init(x + w / 2, y + h / 2, 0);
+        g_bullets.push_back(bullet);
+    }
 }
 
 void Player::TakeDamage(int dmg) {
@@ -666,117 +674,30 @@ void GameReset()
 // 输入更新（键盘+鼠标消息处理）
 void InputUpdate()
 {
-    ExMessage msg;
+    // 读取鼠标和键盘消息
+    peekmessage(&msg, EX_MOUSE | EX_KEY);
 
-    // 每帧先清空所有消息，只处理当前这一帧
-    while (peekmessage(&msg, EM_MOUSE | EM_KEY))
-    {
-        // 按键逻辑
-        if (msg.message == WM_KEYDOWN)
-        {
-            if (msg.vkcode == VK_ESCAPE && g_curUI == PLAY)
-            {
-                g_isPause = true;
-                g_curUI = PAUSE;
-            }
-        }
-
-        // 鼠标左键点击
-        if (msg.message == WM_LBUTTONDOWN)
-        {
-            int mx = msg.x;
-            int my = msg.y;
-
-            // ======================
-            // 开始界面按钮
-            // ======================
-            if (g_curUI == START)
-            {
-                // 开始游戏
-                if (mx >= 600 && mx <= 730 && my >= 280 && my <= 330)
-                {
-                    GameReset();
-                    g_curUI = PLAY;
-                }
-                // 玩法介绍
-                else if (mx >= 600 && mx <= 730 && my >= 340 && my <= 390)
-                {
-                    g_curUI = HELP;
-                }
-                // 退出游戏
-                else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570)
-                {
-                    g_isRun = false;
-                }
-            }
-
-            // ======================
-            // 暂停界面
-            // ======================
-            else if (g_curUI == PAUSE)
-            {
-                // 继续游戏
-                if (mx >= 450 && mx <= 550 && my >= 360 && my <= 410)
-                {
-                    g_isPause = false;
-                    g_curUI = PLAY;
-                }
-                // 重新开始
-                else if (mx >= 450 && mx <= 550 && my >= 200 && my <= 250)
-                {
-                    GameReset();
-                }
-                // 返回菜单
-                else if (mx >= 450 && mx <= 550 && my >= 280 && my <= 330)
-                {
-                    g_curUI = START;
-                }
-            }
-
-            // ======================
-            // 结算界面
-            // ======================
-            else if (g_curUI == SETTLEMENT)
-            {
-                // 重新开始
-                if (mx >= 280 && mx <= 380 && my >= 450 && my <= 500)
-                {
-                    GameReset();
-                }
-                // 返回菜单
-                else if (mx >= 680 && mx <= 780 && my >= 450 && my <= 500)
-                {
-                    g_curUI = START;
-                }
-            }
-
-            // ======================
-            // 帮助等界面点一下返回
-            // ======================
-            else if (g_curUI == HELP || g_curUI == SETTING || g_curUI == TEAM)
-            {
-                g_curUI = START;
-            }
-
-            // ======================
-            // 游戏内攻击
-            // ======================
-            else if (g_curUI == PLAY && !g_isPause)
-            {
-                Bullet bullet;
-                bullet.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, 0);
-                g_bullets.push_back(bullet);
-            }
-        }
-    }
-
-    // 移动一直可以
+    // 只有在玩游戏、没暂停的时候输入
     if (g_curUI == PLAY && !g_isPause)
     {
+        // 玩家移动
         g_player.Move();
+
+        // 鼠标左键点击，玩家发射子弹
+        if (msg.message == WM_LBUTTONDOWN)
+        {
+            g_player.Attack();
+        }
+
+        // 按ESC键暂停
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+        {
+            g_isPause = true;
+            g_curUI = PAUSE;
+            Sleep(200);
+        }
     }
 }
-
 
 bool CheckButtonClick(Button& btn) {
     // 直接读取全局 msg，不重复 peekmessage
@@ -1112,60 +1033,45 @@ void SpawnFinalBoss() {
     g_hasFinalBoss = true;
 }
 
-void UpdateBullets()
-{
-    for (int i = 0; i < g_bullets.size(); i++)
-    {
-        if (!g_bullets[i].active)
-            continue;
-
-        if (g_bullets[i].flag == 0)
-            g_bullets[i].P_Move();
-        else
-            g_bullets[i].M_Move();
-
-        if (g_bullets[i].CheckBorder())
-            g_bullets[i].active = false;
+void UpdateBullets() {
+    for (auto i = g_bullets.begin(); i != g_bullets.end(); i++) {
+        while (!i->CheckBorder()&&i->active) {
+            //只要子弹存在并且不出界就更新坐标
+            if (i->flag == 0)i->P_Move();//判断子弹类型
+            else i->M_Move();
+        }
+        //出界后销毁
+        i->active = false;
+        g_bullets.erase(i);//在vector中删除子弹对象i
     }
-
-    // 安全清理
-    vector<Bullet> temp;
-    for (auto& b : g_bullets)
-        if (b.active)
-            temp.push_back(b);
-    g_bullets.swap(temp);
 }
 
 void UpdateMonsters() {
 
 }
 
-void Collide_BulletMonster()
-{
-    if (g_bullets.empty() || g_monsters.empty())    //如果没有子弹或怪物，直接退出
-        return;
-
-    for (int i = 0; i < g_bullets.size(); i++)
-    {
-        Bullet& b = g_bullets[i];   //获取当前循环到的子弹
-        if (!b.active || b.flag != 0)   //如果子弹失效 或 不是玩家子弹，跳过
-            continue;
-
-        for (int j = 0; j < g_monsters.size(); j++)
-        {
-            Monster& m = g_monsters[j]; //获取当前循环到的怪物
-            if (!m.active)  //如果怪物已死亡，跳过
-                continue;
-            ////判断 子弹 和 怪物 是否重叠
-            if (b.x < m.x + m.w &&
-                b.x + b.w > m.x &&
-                b.y < m.y + m.h &&
-                b.y + b.h > m.y)
-            {
-                m.TakeDamage(b.atk, g_player);  //碰撞成功：怪物掉血
-                b.active = false;   //一颗子弹只打一个怪物，打完就跳出循环
-                break;
+void Collide_BulletMonster() {
+    for (auto B = g_bullets.begin(); B != g_bullets.end(); B++) {
+        //玩家子弹
+        if (B->flag == 0) {
+            for (auto M = g_monsters.begin(); M != g_monsters.end(); M++) {
+                //判断子弹和怪物的贴图是否有重合
+                if ((M->x-B->w<=B->x||M->x+M->w<=B->x)&&(M->y-B->h<=B->x||M->y+M->h<=B->y))
+                {
+                    M->TakeDamage(B->atk, g_player);//怪物受到子弹攻击
+                    B->active = false;//子弹销毁
+                    g_bullets.erase(B);
+                }
             }
+        }
+        //怪物子弹 
+        //判断子弹和怪物的贴图是否有重合
+        else if((g_player.x - B->w <= B->x || g_player.x + g_player.w <= B->x) 
+            && (g_player.y - B->h <= B->x || g_player.y + g_player.h <= B->y))
+        {
+            g_player.TakeDamage(B->atk);//玩家受到子弹伤害
+            B->active = false;//子弹销毁
+            g_bullets.erase(B);
         }
     }
 }
