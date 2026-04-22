@@ -1226,7 +1226,7 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     sprintf_s(s2, 50, "%d", player->level);
     outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
     setfillcolor(0XE2961B);
-    solidrectangle(70, 78, 100, 88);
+    solidrectangle(70, 78, 70+player->exp, 88);
 
     //绘制玩家分数
     std::string s3 = "分数:";
@@ -1237,7 +1237,7 @@ void DrawPlayerInfo(GameRes* picture, Player* player) {
     
     //绘制玩家血量
     setfillcolor(RED);
-    solidrectangle(28, 15, 1 + player->hp, 25);
+    solidrectangle(28, 15,  player->hp, 25);
     //绘制玩家攻击力
     setfillcolor(0XFFFFFF);
     solidrectangle(28, 45, player->atk + 28, 60);
