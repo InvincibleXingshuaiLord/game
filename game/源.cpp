@@ -8,7 +8,7 @@
 #include "EasyXpng.h"
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       700
-
+using namespace std;
 //获取全局消息
 ExMessage msg = { 0 };
 
@@ -146,15 +146,16 @@ public:
     int h;              //子弹贴图高度
     int speed;          //子弹移动速度
     int atk;            //子弹攻击力
+    int flag;           //子弹类型  0：玩家  1：怪物
     bool active;        //子弹是否存在
 
 public:
-    Bullet();           //构造函数
-    void Init(int px, int py); //初始化子弹位置
-    void P_Move();                      //玩家子弹移动
-    void M_Move(Monster& bigboss);       //大boss子弹移动
-    void TrackPlayer(Player& player);      //boss子弹追击玩家
-    bool CheckBorder(); //检测子弹是否出界，出界则销毁
+    Bullet();                                 //构造函数
+    void Init(int px, int py,int pflag);      //初始化子弹位置和类型
+    void P_Move();                            //玩家子弹移动
+    void M_Move();                            //大boss子弹移动
+    void TrackPlayer(Player& player);         //boss子弹追击玩家
+    bool CheckBorder();                       //检测子弹是否出界，出界则销毁
 };
 
 
@@ -478,8 +479,9 @@ Bullet::Bullet() {
     this->active = false;
 }
 
-void Bullet::Init(int px, int py) {
+void Bullet::Init(int px, int py,int pflag) {
     this->x = px, this->y = py;//更新子弹初始坐标
+    this->flag = flag;
     this->active = true;//更新子弹存在状态
 }
 
@@ -501,7 +503,7 @@ void Bullet::P_Move() {
        
 }
 
-void Bullet::M_Move(Monster& bigboss) {
+void Bullet::M_Move() {
     this->atk = 100;//初始化怪物子弹伤害
     this->TrackPlayer(g_player);//子弹追击玩家 
 }
@@ -1087,7 +1089,16 @@ void SpawnFinalBoss() {
 }
 
 void UpdateBullets() {
-
+    for (auto i = g_bullets.begin(); i != g_bullets.end(); i++) {
+        while (!i->CheckBorder()&&i->active) {
+            //只要子弹存在并且不出界就更新坐标
+            if (i->flag == 0)i->P_Move();//判断子弹类型
+            else i->M_Move();
+        }
+        //出界后销毁
+        i->active = false;
+        g_bullets.erase(i);//在vector中删除子弹对象i
+    }
 }
 
 void UpdateMonsters() {
@@ -1095,7 +1106,29 @@ void UpdateMonsters() {
 }
 
 void Collide_BulletMonster() {
-
+    for (auto B = g_bullets.begin(); B != g_bullets.end(); B++) {
+        //玩家子弹
+        if (B->flag == 0) {
+            for (auto M = g_monsters.begin(); M != g_monsters.end(); M++) {
+                //判断子弹和怪物的贴图是否有重合
+                if ((M->x-B->w<=B->x||M->x+M->w<=B->x)&&(M->y-B->h<=B->x||M->y+M->h<=B->y))
+                {
+                    M->TakeDamage(B->atk, g_player);//怪物受到子弹攻击
+                    B->active = false;//子弹销毁
+                    g_bullets.erase(B);
+                }
+            }
+        }
+        //怪物子弹 
+        //判断子弹和怪物的贴图是否有重合
+        else if((g_player.x - B->w <= B->x || g_player.x + g_player.w <= B->x) 
+            && (g_player.y - B->h <= B->x || g_player.y + g_player.h <= B->y))
+        {
+            g_player.TakeDamage(B->atk);//玩家受到子弹伤害
+            B->active = false;//子弹销毁
+            g_bullets.erase(B);
+        }
+    }
 }
 
 void Collide_PlayerMonster() {
