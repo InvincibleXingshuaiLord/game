@@ -702,18 +702,15 @@ void InputUpdate()
 }
 
 bool CheckButtonClick(Button& btn) {
-    ExMessage msg;
-    if (peekmessage(&msg, EX_MOUSE))
+    // 直接读取全局 msg，不重复 peekmessage
+    if (msg.message == WM_LBUTTONDOWN)
     {
-        // 检测鼠标左键按下
-        if (msg.message == WM_LBUTTONDOWN)
+        // 判断鼠标坐标是否在按钮区域内
+        if (msg.x >= btn.x && msg.x <= btn.x + btn.w &&
+            msg.y >= btn.y && msg.y <= btn.y + btn.h)
         {
-            // 判断鼠标坐标是否在按钮区域内
-            if (msg.x >= btn.x && msg.x <= btn.x + btn.w &&
-                msg.y >= btn.y && msg.y <= btn.y + btn.h)
-            {
-                return true;  // 点击了按钮
-            }
+            msg.message = 0;  // 处理完后清空，防止下一帧重复触发
+            return true;  // 点击了按钮
         }
     }
     return false;
