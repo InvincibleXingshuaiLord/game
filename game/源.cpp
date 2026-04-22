@@ -672,30 +672,84 @@ void GameReset()
 }
 
 // 输入更新（键盘+鼠标消息处理）
+// 输入更新（键盘+鼠标消息处理）
 void InputUpdate()
 {
-    // 读取鼠标和键盘消息
-    peekmessage(&msg, EX_MOUSE | EX_KEY);
-
-    // 只有在玩游戏、没暂停的时候输入
-    if (g_curUI == PLAY && !g_isPause)
+    ExMessage msg;
+    while (peekmessage(&msg, EX_MOUSE | EX_KEY))
     {
-        // 玩家移动
-        g_player.Move();
-
-        // 鼠标左键点击，玩家发射子弹
+        // 鼠标点击
         if (msg.message == WM_LBUTTONDOWN)
         {
-            g_player.Attack();
-        }
+            int mx = msg.x;
+            int my = msg.y;
 
-        // 按ESC键暂停
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
-        {
-            g_isPause = true;
-            g_curUI = PAUSE;
-            Sleep(200);
+            if (g_curUI == START)
+            {
+                // 开始游戏 (600,280, 130,50)
+                if (mx >= 600 && mx <= 730 && my >= 280 && my <= 330) {
+                    GameReset();
+                    g_curUI = PLAY;
+                }
+                // 玩法介绍
+                else if (mx >= 600 && mx <= 730 && my >= 340 && my <= 390) {
+                    g_curUI = HELP;
+                }
+                // 退出游戏
+                else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570) {
+                    g_isRun = false;
+                }
+            }
+            else if (g_curUI == PAUSE)
+            {
+                // 继续游戏
+                if (mx >= 450 && mx <= 550 && my >= 360 && my <= 410) {
+                    g_isPause = false;
+                    g_curUI = PLAY;
+                }
+                // 重新开始
+                else if (mx >= 450 && mx <= 550 && my >= 200 && my <= 250) {
+                    GameReset();
+                }
+                // 返回菜单
+                else if (mx >= 450 && mx <= 550 && my >= 280 && my <= 330) {
+                    g_curUI = START;
+                }
+            }
+            else if (g_curUI == SETTLEMENT)
+            {
+                // 重新开始
+                if (mx >= 280 && mx <= 380 && my >= 450 && my <= 500) {
+                    GameReset();
+                }
+                // 返回菜单
+                else if (mx >= 680 && mx <= 780 && my >= 450 && my <= 500) {
+                    g_curUI = START;
+                }
+            }
+            // 帮助/设置/团队 点一下返回
+            else if (g_curUI == HELP || g_curUI == SETTING || g_curUI == TEAM)
+            {
+                g_curUI = START;
+            }
         }
+        // 键盘按键
+        if (msg.message == WM_KEYDOWN)
+        {
+            if (msg.vkcode == VK_ESCAPE && g_curUI == PLAY) //ESC 暂停
+            {
+                g_isPause = true;
+                g_curUI = PAUSE;
+            }
+        }
+    }
+
+    // ----------------------
+    // 持续按键：WASD 移动
+    // ----------------------
+    if (g_curUI == PLAY && !g_isPause)
+    {
+        g_player.Move(); // 内部用 GetAsyncKeyState
     }
 }
 
@@ -1167,7 +1221,7 @@ void DrawPlayerInfo() {
     sprintf_s(s2, 50, "%d", g_player.level);
     outtextxy(textwidth(s1.c_str()) + 4, 70, s2);
     setfillcolor(0XE2961B);
-    solidrectangle(70, 78, 100, 88);
+    solidrectangle(70, 78, 70+g_player.exp, 88);
 
     //绘制玩家分数
     std::string s3 = "分数:";
