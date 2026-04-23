@@ -471,23 +471,23 @@ Bullet::Bullet() {
 
 void Bullet::Init(int px, int py,int pflag) {
     this->x = px, this->y = py;//更新子弹初始坐标
-    this->flag = pflag;
+    this->flag = pflag;//设置子弹种类
     this->active = true;//更新子弹存在状态
 }
 
 void Bullet::P_Move() {
     this->atk = g_player.atk;//更新玩家子弹伤害
     //计算
-    int mx, my, dx, dy;
+    double mx, my, dx, dy;
     mx = my = dx = dy = 0;
     double vx, vy, t, s;
     vx = vy = t = s = 0;
 
     mx = msg.x, my = msg.y;
-    dx = mx - this->x, dy = my - this->y;
+    dx = mx - (this->x + this->w / 2), dy = my - (this->y+this->h/2);
     s = sqrt(dx * dx + dy * dy);
-    t = double(s / this->speed);
-    vx = (double)(dx / t); vy = (double)(dy / t);//计算子弹x，y速度
+    t = s / this->speed;
+    vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
        
@@ -509,13 +509,9 @@ void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
 
 bool Bullet::CheckBorder() {
     if (this->active == false)return true;//如果初始化的时候子弹就不存在，返回真
-    if (this->x  <= 0 || this->x + this->w >= getwidth() || this->y  <= 0 || this->y + this->h >= getheight())
-        //如果整个图片出界，返回真
-    {
-        this->active = false;//同时改变子弹的存在状态
-        return true;
-    }
-    return false;
+    if (this->x <= 0 || this->x + this->w >= getwidth() || this->y <= 0 || this->y + this->h >= getheight())
+        return true;//出界
+    else return false;
 }
 //静行开始
 Monster::Monster() {
@@ -666,7 +662,7 @@ void GameReset()
 // 输入更新（键盘+鼠标消息处理）
 void InputUpdate()
 {
-    ExMessage msg;
+   // ExMessage msg;
 
     while (peekmessage(&msg, EM_MOUSE | EM_KEY))
     {
