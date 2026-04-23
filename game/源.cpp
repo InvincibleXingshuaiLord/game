@@ -131,7 +131,7 @@ public:
     void RandomSpawn(); //随机位置生成怪物
     void TrackPlayer(Player& player); //自动追踪玩家
     void ShootMonsterBullet(Player& player);//怪物攻击，发射子弹
-    void TakeDamage(int dmg,Player& player); //怪物受伤处理
+    void TakeDamage(int dmg, Player& player); //怪物受伤处理
     void OnDead(Player& player);      //怪物死亡处理
 };
 
@@ -154,7 +154,7 @@ public:
 public:
     Bullet();                                 //构造函数
     void Init(int px, int py);                     //初始化子弹位置和类型（怪物）
-    void Init(int px, int py,int pmx,int pmy);      //初始化子弹位置和类型（玩家）
+    void Init(int px, int py, int pmx, int pmy);      //初始化子弹位置和类型（玩家）
     void P_Move();                            //玩家子弹移动
     void M_Move();                            //大boss子弹移动
     void TrackPlayer(Player& player);         //boss子弹追击玩家
@@ -333,11 +333,11 @@ void drawtext(int x, int y, std::string s);
 
 int main()
 {
-   
+
     //对象定义区
     //对象定义结束
 
-	srand((unsigned)time(NULL));
+    srand((unsigned)time(NULL));
     //初始化游戏
     GameInit();
     //开始批量绘图，减少闪烁
@@ -347,7 +347,7 @@ int main()
     {
         //处理鼠标和键盘
         InputUpdate();
-        
+
         cleardevice();
 
         //绘制当前界面
@@ -362,13 +362,13 @@ int main()
             if (!g_isPause)
                 GameUpdate();
             //绘制游戏画面
-             DrawGameUI();
+            DrawGameUI();
             break;
         case PAUSE:      DrawPauseUI();     break;
         case SETTLEMENT: DrawSettlementUI(); break;
         }
-		FlushBatchDraw();
-        
+        FlushBatchDraw();
+
     }
     //结束批量绘图，显示画面
     EndBatchDraw();
@@ -475,7 +475,7 @@ Bullet::Bullet() {
     this->active = false;
 }
 
-void Bullet::Init(int px, int py,int pmx,int pmy) {
+void Bullet::Init(int px, int py, int pmx, int pmy) {
     this->x = px, this->y = py;//更新子弹初始坐标
     this->flag = 0;//设置玩家子弹
     this->mx = pmx, this->my = pmy;//记录鼠标按下的坐标
@@ -494,8 +494,8 @@ void Bullet::P_Move() {
     double dx, dy;
     dx = dy = 0;
     double vx, vy, t, s;
-    vx = vy = t = s = 0;  
-    dx = this->mx - (this->x + this->w / 2), dy = this->my - (this->y+this->h/2);
+    vx = vy = t = s = 0;
+    dx = this->mx - (this->x + this->w / 2), dy = this->my - (this->y + this->h / 2);
     s = sqrt(dx * dx + dy * dy);
     t = s / this->speed;
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
@@ -579,50 +579,50 @@ void Monster::TrackPlayer(Player& player)
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
- if (!active) return;
- Bullet bullet;
- bullet.Init(x, y); 
- bullet.speed = 3;   
- bullet.atk = 1;     
- bullet.active = true;
+    if (!active) return;
+    Bullet bullet;
+    bullet.Init(x, y);
+    bullet.speed = 3;
+    bullet.atk = 1;
+    bullet.active = true;
 }
 
-void Monster::TakeDamage(int dmg,Player& player) {
+void Monster::TakeDamage(int dmg, Player& player) {
     if (dmg < 100 && dmg>0) {
         hp -= dmg;
     }
     else {
-        hp =0;
+        hp = 0;
     }
     if (hp <= 0) {
         OnDead(player);
     }
 }//遇到攻击怪物闪烁 是否需要加
 void Monster::OnDead(Player& player) {
- active = false;
- player.exp += expDrop;
- player.score += score;
+    active = false;
+    player.exp += expDrop;
+    player.score += score;
 }
 //静行结束
 
 void GameRes::Load() {
     //
-	
-	loadimage(&this->imgPlayer, "photo/kun.png", 32, 32);
-	loadimage(&this->imgBullet, "photo/bullet.png", 10, 10);
-	loadimage(&this->imgMonster, "photo/monster.png", 32, 32);
-	loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
-	loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
-	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
-	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
-	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
-	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
+
+    loadimage(&this->imgPlayer, "photo/kun.png", 32, 32);
+    loadimage(&this->imgBullet, "photo/bullet.png", 10, 10);
+    loadimage(&this->imgMonster, "photo/monster.png", 32, 32);
+    loadimage(&this->imgMiniBoss, "photo/littleBoss.png", 64, 64);
+    loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
+    loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
+    loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
+    loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
+    loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
+    loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
+    loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
     loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
-    loadimage(&this-> imgGj, "photo/gj2.png", 25, 25);
-   
+    loadimage(&this->imgGj, "photo/gj2.png", 25, 25);
+
 }
 
 void GameRes::Free() {
@@ -640,8 +640,8 @@ void GameInit()
     // 初始化随机数种子
     srand((unsigned)time(NULL));
 
-	// 加载游戏资源
-	g_res.Load();
+    // 加载游戏资源
+    g_res.Load();
 
     // 初始化游戏状态
     g_isRun = true;
@@ -685,7 +685,7 @@ void GameReset()
 // 输入更新（键盘+鼠标消息处理）
 void InputUpdate()
 {
-   // ExMessage msg;
+    // ExMessage msg;
 
     while (peekmessage(&msg, EM_MOUSE | EM_KEY))
     {
@@ -821,8 +821,8 @@ void DrawButton(Button& btn, const char* text)
     int textX = btn.x + (btn.w - textW) / 2;
     int textY = btn.y + (btn.h - textH) / 2;
     outtextxy(textX, textY, text);
-    
-    
+
+
 }
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
@@ -836,14 +836,14 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s) {
 void DrawStartUI() {
 
 
-    
+
     putimage(0, 0, &g_res.bgStart);
 
     int rx, ry[5], rh, rw, i;
-    btnStart.x = btnHelp.x= btnTeam.x= btnSetting.x= btnExit.x=600;
+    btnStart.x = btnHelp.x = btnTeam.x = btnSetting.x = btnExit.x = 600;
     btnStart.y = 280;
-    btnStart.w = btnHelp.w= btnTeam.w= btnSetting.w= btnExit.w=130;
-    btnStart.h = btnHelp.h= btnTeam.h= btnSetting.h= btnExit.h=50;
+    btnStart.w = btnHelp.w = btnTeam.w = btnSetting.w = btnExit.w = 130;
+    btnStart.h = btnHelp.h = btnTeam.h = btnSetting.h = btnExit.h = 50;
     btnHelp.y = btnStart.y + 10 + btnStart.h;
     btnTeam.y = btnHelp.y + 10 + btnHelp.h;
     btnSetting.y = btnTeam.y + btnTeam.h + 10;
@@ -862,8 +862,8 @@ void DrawStartUI() {
     setfillcolor(0XFFFFFF);
 
 
-   
-   
+
+
 }
 //用于玩法介绍界面文字绘制
 void drawtext(int x, int y, std::string s) {
@@ -894,16 +894,16 @@ void DrawHelpUI() {
     drawtext(0, 240, "大BOSS:");
     drawtext(80, 240, "913点血量伤害100点，会向玩家发射子弹，与玩家碰撞，减少玩家血量，玩家获得短暂无敌");
     drawtext(0, 640, "坤坤攻击方式:");
-  	drawtext(140, 640, "点击鼠标左键发射子弹，方向为与鼠标点击坐标的连线。");
+    drawtext(140, 640, "点击鼠标左键发射子弹，方向为与鼠标点击坐标的连线。");
     drawtext(0, 670, "控制坤坤移动方式:");
     drawtext(180, 670, "点击'W'向上移动，点击'D'向下移动，点击'A'向左移动，点击'D'向右移动");
     //绘制返回菜单
     btnExit.x = 900;
-    btnExit.y= 650;
+    btnExit.y = 650;
     btnExit.w = 100;
-    btnExit.h = 50;  
-     setfillcolor(0XFFFFFF);
-    solidrectangle(btnExit.x, btnExit.y, btnExit.x+btnExit.w, btnExit.y + btnExit.h);
+    btnExit.h = 50;
+    setfillcolor(0XFFFFFF);
+    solidrectangle(btnExit.x, btnExit.y, btnExit.x + btnExit.w, btnExit.y + btnExit.h);
     setbkmode(TRANSPARENT);
     settextstyle(30, 10, "微软雅黑");
     settextcolor(0X000000);
@@ -920,7 +920,7 @@ void DrawTeamUI() {
 }
 
 void DrawPauseUI() {
-  
+
     putimage(0, 0, &g_res.bgPause);
     setbkmode(TRANSPARENT);
     settextstyle(35, 20, "隶书");
@@ -939,15 +939,15 @@ void DrawPauseUI() {
     //绘制返回菜单
     functionalshape(btnBack.x, btnBack.y, btnBack.w, btnBack.h, "返回菜单");
     //	//绘制继续游戏
-    functionalshape(btnResume.x, btnResume.y, btnResume.w, btnResume.h,  "继续游戏");
-    
+    functionalshape(btnResume.x, btnResume.y, btnResume.w, btnResume.h, "继续游戏");
+
 }
 
 
 void DrawSettlementUI() {
-   //失败界面
+    //失败界面
     if (g_isGameOver == true) {
-      //绘制失败文字
+        //绘制失败文字
         putimage(0, 0, &g_res.bgSettlement);
         setbkmode(TRANSPARENT);
         settextstyle(65, 50, "隶书");
@@ -966,13 +966,13 @@ void DrawSettlementUI() {
         std::string s3 = "分数:";
         outtextxy(0, 115, s3.c_str());
         char s4[50];
-        sprintf_s(s4, 50, "%d",g_player.score);
+        sprintf_s(s4, 50, "%d", g_player.score);
         outtextxy(textwidth(s3.c_str()) + 4, 120, s4);
 
         //绘制重新开始
-        btnRestart.y = btnBack.y=450;
-        btnRestart.w = btnBack.w=100;
-        btnRestart.h = btnBack.h= 50;
+        btnRestart.y = btnBack.y = 450;
+        btnRestart.w = btnBack.w = 100;
+        btnRestart.h = btnBack.h = 50;
         btnRestart.x = 280;
         btnBack.x = 680;
         functionalshape(btnRestart.x, btnRestart.y, btnRestart.w, btnRestart.h, "重新开始");
@@ -981,7 +981,7 @@ void DrawSettlementUI() {
     }
 
     //绘制胜利界面
-    if (g_isWin==true) {
+    if (g_isWin == true) {
         //绘制胜利文字
         putimage(0, 0, &g_res.bgSettlement);
         setbkmode(TRANSPARENT);
@@ -1017,7 +1017,7 @@ void DrawSettlementUI() {
         //绘制返回菜单
         functionalshape(btnBack.x, btnBack.y, btnBack.w, btnBack.h, "返回菜单");
     }
-   
+
 }
 
 // 游戏逻辑每帧更新
@@ -1180,7 +1180,7 @@ void Collide_PlayerMonster() {
 }
 
 void CheckLevelUp() {
-    if(g_player.exp >= g_player.expNeed)
+    if (g_player.exp >= g_player.expNeed)
     {
         g_player.LevelUp();
     }
@@ -1232,7 +1232,7 @@ void DrawGameUI() {
 
     putimage(0, 0, &g_res.bgGame);
     DrawPlayerInfo();
-	DrawEntities();
+    DrawEntities();
     //暂停按钮绘制
     btnPause.x = 920;
     btnPause.y = 620;
@@ -1243,7 +1243,7 @@ void DrawGameUI() {
 }
 
 void DrawPlayerInfo() {
-  
+
     putimage(0, 10, &g_res.imgAx);
     putimage(0, 40, &g_res.imgGj);
     //设置字体大小和格式
@@ -1265,7 +1265,7 @@ void DrawPlayerInfo() {
     char s4[50];
     sprintf_s(s4, 50, "%d", g_player.score);
     outtextxy(textwidth(s3.c_str()) + 4, 95, s4);
-    
+
     //绘制玩家血量
     setfillcolor(RED);
     solidrectangle(28, 15, g_player.hp + 28, 25);
@@ -1289,8 +1289,8 @@ void DrawMonsterHPBar(Monster& monster)
     // 血条前景（根据血量比例染色：绿->黄->红）
     float ratio = (float)monster.hp / (float)monster.maxHp;
     COLORREF hpColor = (ratio > 0.5f) ? RGB(0, 200, 0)
-                     : (ratio > 0.25f) ? RGB(220, 200, 0)
-                     : RGB(220, 0, 0);
+        : (ratio > 0.25f) ? RGB(220, 200, 0)
+        : RGB(220, 0, 0);
     setfillcolor(hpColor);
     solidrectangle(barX, barY, barX + (int)(barW * ratio), barY + barH);
 
@@ -1302,7 +1302,7 @@ void DrawMonsterHPBar(Monster& monster)
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities()
 {
-   //  1. 绘制玩家 
+    //  1. 绘制玩家 
     if (g_player.isInvincible)
     {
         // 无敌状态：半透明绘制
