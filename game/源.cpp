@@ -469,7 +469,7 @@ Bullet::Bullet() {
     this->h = 10;
     this->mx = 0;
     this->my = 0;
-    this->speed = 8;
+    this->speed = 2;
     this->atk = 1;
 
     this->active = false;
@@ -501,6 +501,7 @@ void Bullet::P_Move() {
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
+    this->mx += vx; this->my += vy;
        
 }
 
