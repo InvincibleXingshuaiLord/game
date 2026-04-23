@@ -20,9 +20,9 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     2
-#define BULLET_SPEED     8
-#define MONSTER_SPEED    2
+#define PLAYER_SPEED     1
+#define BULLET_SPEED     2
+#define MONSTER_SPEED    0.5
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -87,7 +87,7 @@ public:
     int hp;             //当前生命值
     int maxHp;          //最大生命值
     int atk;            //攻击力
-    int moveSpeed;      //移动速度
+    double moveSpeed;      //移动速度
 
     int level;          //当前等级
     int exp;            //当前经验值
@@ -119,7 +119,7 @@ public:
 
     int hp;             //当前生命值
     int maxHp;          //最大生命值
-    int speed;          //移动速度
+    double speed;          //移动速度
     int expDrop;        //死亡掉落经验值
     int score;          //击杀获得分数
 
@@ -469,7 +469,7 @@ Bullet::Bullet() {
     this->h = 10;
     this->mx = 0;
     this->my = 0;
-    this->speed = 8;
+    this->speed = BULLET_SPEED;
     this->atk = 1;
 
     this->active = false;
@@ -501,7 +501,7 @@ void Bullet::P_Move() {
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
-       
+    this->mx += vx; this->my += vy;
 }
 
 void Bullet::M_Move() {
@@ -553,16 +553,29 @@ void Monster::RandomSpawn() {
 
 }
 
-void Monster::TrackPlayer(Player& player) {
-  
-        int dx = player.x - x;
-        int dy = player.y - y;
-        double distance = sqrt(dx * dx + dy * dy);
-        x += (dx / distance) * speed;
-        y += (dy / distance) * speed;
-         if (distance < 1.0) {
+void Monster::TrackPlayer(Player& player)
+{
+    // 向量差
+    int dx = player.x + player.w / 2 - (x + w / 2);
+    int dy = player.y + player.h / 2 - (y + h / 2);
+
+    double dist = sqrt(dx * dx + dy * dy);
+    // 贴脸停止，防止抽搐
+    if (dist < 8.0)
         return;
-    }
+
+    // 标准化方向 + 匀速移动（最稳定写法）
+    double moveX = (dx / dist) * speed;
+    double moveY = (dy / dist) * speed;
+
+    x += (int)round(moveX);
+    y += (int)round(moveY);
+
+    // 限制怪物不出屏幕，彻底杜绝卡边界抽搐
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + w > WIN_WIDTH)  x = WIN_WIDTH - w;
+    if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
@@ -581,7 +594,7 @@ void Monster::TakeDamage(int dmg,Player& player) {
     else {
         hp =0;
     }
-    if (hp == 0) {
+    if (hp <= 0) {
         OnDead(player);
     }
 }//遇到攻击怪物闪烁 是否需要加
@@ -603,14 +616,9 @@ void GameRes::Load() {
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
-<<<<<<< HEAD
-	loadimage(&this->bgTeam, "photo/kk1.jpg", 1000, 700);
-=======
-	loadimage(&this->bgTeam, "photo/td1.png", 1000, 700);
->>>>>>> parent of b4733c5 (淇敼浜嗗洟闃熶粙缁嶇晫闈㈣儗鏅?
+	loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
 	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
-	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
     loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
     loadimage(&this-> imgGj, "photo/gj2.png", 25, 25);
@@ -651,7 +659,7 @@ void GameInit()
     g_monsters.clear();
 
     // 控制怪物多久出一个
-    g_spawnRate = 60;
+    g_spawnRate = 1200;
     g_spawnTimer = 0;
 }
 
@@ -1117,7 +1125,15 @@ void UpdateBullets()
 }
 
 void UpdateMonsters() {
-
+    // 遍历所有怪物
+    for (int i = 0; i < g_monsters.size(); i++) {
+        Monster& m = g_monsters[i];
+        // 只更新存活的怪物
+        if (m.active) {
+            // 调用追踪玩家函数，实现移动
+            m.TrackPlayer(g_player);
+        }
+    }
 }
 
 void Collide_BulletMonster()
