@@ -147,11 +147,14 @@ public:
     int speed;          //子弹移动速度
     int atk;            //子弹攻击力
     int flag;           //子弹类型  0：玩家  1：怪物
+    int mx;
+    int my;
     bool active;        //子弹是否存在
 
 public:
     Bullet();                                 //构造函数
-    void Init(int px, int py,int pflag);      //初始化子弹位置和类型
+    void Init(int px, int py);                     //初始化子弹位置和类型（怪物）
+    void Init(int px, int py,int pmx,int pmy);      //初始化子弹位置和类型（玩家）
     void P_Move();                            //玩家子弹移动
     void M_Move();                            //大boss子弹移动
     void TrackPlayer(Player& player);         //boss子弹追击玩家
@@ -464,27 +467,35 @@ Bullet::Bullet() {
     this->y = 0;
     this->w = 10;
     this->h = 10;
+    this->mx = 0;
+    this->my = 0;
     this->speed = 8;
     this->atk = 1;
+
     this->active = false;
 }
 
-void Bullet::Init(int px, int py,int pflag) {
+void Bullet::Init(int px, int py,int pmx,int pmy) {
     this->x = px, this->y = py;//更新子弹初始坐标
-    this->flag = pflag;//设置子弹种类
+    this->flag = 0;//设置玩家子弹
+    this->mx = pmx, this->my = pmy;//记录鼠标按下的坐标
+    this->active = true;//更新子弹存在状态
+}
+
+void Bullet::Init(int px, int py) {
+    this->x = px, this->y = py;//更新子弹初始坐标
+    this->flag = 1;//设置怪物子弹
     this->active = true;//更新子弹存在状态
 }
 
 void Bullet::P_Move() {
     this->atk = g_player.atk;//更新玩家子弹伤害
     //计算
-    double mx, my, dx, dy;
-    mx = my = dx = dy = 0;
+    double dx, dy;
+    dx = dy = 0;
     double vx, vy, t, s;
-    vx = vy = t = s = 0;
-
-    mx = msg.x, my = msg.y;
-    dx = mx - (this->x + this->w / 2), dy = my - (this->y+this->h/2);
+    vx = vy = t = s = 0;  
+    dx = this->mx - (this->x + this->w / 2), dy = this->my - (this->y+this->h/2);
     s = sqrt(dx * dx + dy * dy);
     t = s / this->speed;
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
@@ -557,7 +568,7 @@ void Monster::TrackPlayer(Player& player) {
 void Monster::ShootMonsterBullet(Player& player) {
  if (!active) return;
  Bullet bullet;
- bullet.Init(x, y, 1); 
+ bullet.Init(x, y); 
  bullet.speed = 3;   
  bullet.atk = 1;     
  bullet.active = true;
@@ -731,7 +742,7 @@ void InputUpdate()
             {
                 // 安全创建子弹
                 Bullet b;
-                b.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, 0);
+                b.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, mx, my);
                 g_bullets.push_back(b);
             }
         }
