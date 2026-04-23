@@ -178,7 +178,8 @@ public:
     IMAGE bgTeam;            //团队介绍
     IMAGE bgGame;            //游戏界面
     IMAGE bgPause;           //暂停界面
-    IMAGE bgSettlement;      //结算界面
+    IMAGE bgWin;            //胜利界面
+    IMAGE bgLose;           //失败界面
     IMAGE imgAx;      // 游戏界面玩家血量图标
     IMAGE imgGj;      // 游戏界面玩家攻击力图标
 public:
@@ -607,8 +608,8 @@ void GameRes::Load() {
 	loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
 	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
-	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
-    loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
+	loadimage(&this->bgLose, "photo/sb1.jpg", 1100, 700);
+    loadimage(&this->bgWin, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
     loadimage(&this-> imgGj, "photo/gj2.png", 25, 25);
    
@@ -964,7 +965,7 @@ void DrawSettlementUI() {
    //失败界面
     if (g_isGameOver == true) {
       //绘制失败文字
-        putimage(0, 0, &g_res.bgSettlement);
+        putimage(0, 0, &g_res.bgLose);
         setbkmode(TRANSPARENT);
         settextstyle(65, 50, "隶书");
         settextcolor(0XFFFFFF);
@@ -999,7 +1000,7 @@ void DrawSettlementUI() {
     //绘制胜利界面
     if (g_isWin==true) {
         //绘制胜利文字
-        putimage(0, 0, &g_res.bgSettlement);
+        putimage(0, 0, &g_res.bgWin);
         setbkmode(TRANSPARENT);
         settextstyle(35, 20, "隶书");
         settextcolor(0XFFFFFF);
@@ -1246,7 +1247,7 @@ void DrawGameUI() {
     btnPause.y = 620;
     btnPause.w = 80;
     btnPause.h = 80;
-    functionalshape(btnPause.x, btnPause.y, btnPause.w, btnPause.h, "暂停游戏");
+    //functionalshape(btnPause.x, btnPause.y, btnPause.w, btnPause.h, "暂停游戏");
 
 }
 
