@@ -20,7 +20,7 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     4
+#define PLAYER_SPEED     2
 #define BULLET_SPEED     8
 #define MONSTER_SPEED    2
 
@@ -545,8 +545,8 @@ void Monster::RandomSpawn() {
     int posy;
     int minx = 0;
     int miny = 0;
-    int maxx = 100;
-    int maxy = 100;
+    int maxx = 1000;
+    int maxy = 700;
     posx = rand() % (maxx - minx + 1) + minx;
     posy = rand() % (maxy - miny + 1) + miny;
     x = posx;
