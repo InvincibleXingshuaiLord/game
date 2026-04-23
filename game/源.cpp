@@ -603,11 +603,8 @@ void GameRes::Load() {
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
-<<<<<<< HEAD
 	loadimage(&this->bgTeam, "photo/kk1.jpg", 1000, 700);
-=======
 	loadimage(&this->bgTeam, "photo/td1.png", 1000, 700);
->>>>>>> parent of b4733c5 (修改了团队介绍界面背�?
 	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgSettlement, "photo/sb1.jpg", 1100, 700);
