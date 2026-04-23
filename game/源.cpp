@@ -703,6 +703,10 @@ void InputUpdate()
                 {
                     g_curUI = HELP;
                 }
+                else if (mx >= 600 && mx <= 730 && my >= 400 && my <= 450)
+                {
+                    g_curUI = TEAM;
+                }
                 else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570)
                 {
                     g_isRun = false;
