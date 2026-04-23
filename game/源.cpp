@@ -20,7 +20,7 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     4
+#define PLAYER_SPEED     2
 #define BULLET_SPEED     8
 #define MONSTER_SPEED    2
 
@@ -470,7 +470,7 @@ Bullet::Bullet() {
     this->h = 10;
     this->mx = 0;
     this->my = 0;
-    this->speed = 2;
+    this->speed = 8;
     this->atk = 1;
 
     this->active = false;
@@ -502,7 +502,6 @@ void Bullet::P_Move() {
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
-    this->mx += vx; this->my += vy;
        
 }
 
@@ -546,8 +545,8 @@ void Monster::RandomSpawn() {
     int posy;
     int minx = 0;
     int miny = 0;
-    int maxx = 100;
-    int maxy = 100;
+    int maxx = 1000;
+    int maxy = 700;
     posx = rand() % (maxx - minx + 1) + minx;
     posy = rand() % (maxy - miny + 1) + miny;
     x = posx;
@@ -605,7 +604,8 @@ void GameRes::Load() {
 	loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
 	loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
 	loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
-	loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
+	loadimage(&this->bgTeam, "photo/kk1.jpg", 1000, 700);
+	loadimage(&this->bgTeam, "photo/td1.png", 1000, 700);
 	loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
 	loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
 	loadimage(&this->bgLose, "photo/sb1.jpg", 1100, 700);
@@ -703,10 +703,6 @@ void InputUpdate()
                 else if (mx >= 600 && mx <= 730 && my >= 340 && my <= 390)
                 {
                     g_curUI = HELP;
-                }
-                else if (mx >= 600 && mx <= 730 && my >= 400 && my <= 450)
-                {
-                    g_curUI = TEAM;
                 }
                 else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570)
                 {
@@ -910,29 +906,6 @@ void DrawSettingUI() {
 }
 
 void DrawTeamUI() {
-    putimage(0, 0, &g_res.bgTeam);
-    setbkmode(TRANSPARENT);
-    settextstyle(50, 30, "隶书");
-    settextcolor(0XFFFFFF);
-    char s[50] = "Segmentation Faultless";
-    outtextxy((1000 - textwidth(s)) / 2, 30, s);
-
-    drawtext(0, 90, "组长-小帅：Segmentation Faultless领导者，负责监督组员进度，游戏图片类，以及绘制玩家、怪物和子弹。");
-
-    drawtext(0, 125, "副组长-傲天：大厂offer收割机，负责游戏按钮类。");
-    drawtext(0, 160, "产品经理-静行：发育路吃钱大王，负责怪物类。");
-    drawtext(0, 195, "产品经理-格子：初始化上帝，负责游戏出始化，管理游戏流程。");
-    drawtext(0, 230, "监督官-小谦：超级创意大师，负责管理游戏子弹类。");
-    drawtext(0, 265, "信息官-小诺：古希腊掌管逻辑的神，负责管理游戏逻辑。");
-    drawtext(0, 300, "技术官-尘风：架构之神，负责游戏架构、原型图、玩家类。");
-    drawtext(0, 335, "技术官-小康：摸鱼之王，负责游戏界面绘制。");
-    btnExit.x = 920;
-    btnExit.y = 650;
-    btnExit.w = 80;
-    btnExit.h = 50;
-    functionalshape(btnExit.x, btnExit.y, btnExit.w, btnExit.h, "返回菜单");
-
-
 
 }
 
