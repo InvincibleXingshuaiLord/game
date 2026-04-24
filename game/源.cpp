@@ -178,7 +178,8 @@ public:
     IMAGE bgTeam;            //团队介绍
     IMAGE bgGame;            //游戏界面
     IMAGE bgPause;           //暂停界面
-    IMAGE bgSettlement;      //结算界面
+    IMAGE bgWin;            //胜利界面
+    IMAGE bgLose;           //失败界面
     IMAGE imgAx;      // 游戏界面玩家血量图标
     IMAGE imgGj;      // 游戏界面玩家攻击力图标
 public:
@@ -619,7 +620,8 @@ void GameRes::Load() {
     loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
     loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
     loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
-    loadimage(&this->bgSettlement, "photo/sl2.jpg", 1000, 800);
+    loadimage(&this->bgWin, "photo/sl2.jpg", 1000, 800);
+    loadimage(&this->bgLose, "photo/sb1.jpg", 1000, 800);
     loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
     loadimage(&this->imgGj, "photo/gj2.png", 25, 25);
 
@@ -713,6 +715,10 @@ void InputUpdate()
                 else if (mx >= 600 && mx <= 730 && my >= 340 && my <= 390)
                 {
                     g_curUI = HELP;
+                }
+                else if (mx >= 600 && mx <= 730 && my >= 400 && my <= 450)
+                {
+                    g_curUI = TEAM;
                 }
                 else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570)
                 {
@@ -916,6 +922,30 @@ void DrawSettingUI() {
 }
 
 void DrawTeamUI() {
+    putimage(0, 0, &g_res.bgTeam);
+    setbkmode(TRANSPARENT);
+    settextstyle(50, 30, "隶书");
+    settextcolor(0XFFFFFF);
+    char s[50] = "Segmentation Faultless";
+    outtextxy((1000 - textwidth(s)) / 2, 30, s);
+
+    drawtext(0, 90, "组长-小帅：Segmentation Faultless领导者，负责监督组员进度，游戏图片类，以及绘制玩家、怪物和子弹。");
+
+    drawtext(0, 125, "副组长-傲天：大厂offer收割机，负责游戏按钮类。");
+    drawtext(0, 160, "产品经理-静行：发育路吃钱大王，负责怪物类。");
+    drawtext(0, 195, "产品经理-格子：初始化上帝，负责游戏出始化，管理游戏流程。");
+    drawtext(0, 230, "监督官-小谦：超级创意大师，负责管理游戏子弹类。");
+    drawtext(0, 265, "信息官-小诺：古希腊掌管逻辑的神，负责管理游戏逻辑。");
+    drawtext(0, 300, "技术官-尘风：架构之神，负责游戏架构、原型图、玩家类。");
+    drawtext(0, 335, "技术官-小康：摸鱼之王，负责游戏界面绘制。");
+    btnExit.x = 920;
+    btnExit.y = 650;
+    btnExit.w = 80;
+    btnExit.h = 50;
+    functionalshape(btnExit.x, btnExit.y, btnExit.w, btnExit.h, "返回菜单");
+
+
+
 
 }
 
@@ -948,7 +978,7 @@ void DrawSettlementUI() {
     //失败界面
     if (g_isGameOver == true) {
         //绘制失败文字
-        putimage(0, 0, &g_res.bgSettlement);
+        putimage(0, 0, &g_res.bgLose);
         setbkmode(TRANSPARENT);
         settextstyle(65, 50, "隶书");
         settextcolor(0XFFFFFF);
@@ -983,7 +1013,7 @@ void DrawSettlementUI() {
     //绘制胜利界面
     if (g_isWin == true) {
         //绘制胜利文字
-        putimage(0, 0, &g_res.bgSettlement);
+        putimage(0, 0, &g_res.bgWin);
         setbkmode(TRANSPARENT);
         settextstyle(35, 20, "隶书");
         settextcolor(0XFFFFFF);
@@ -1238,7 +1268,7 @@ void DrawGameUI() {
     btnPause.y = 620;
     btnPause.w = 80;
     btnPause.h = 80;
-    functionalshape(btnPause.x, btnPause.y, btnPause.w, btnPause.h, "暂停游戏");
+    //functionalshape(btnPause.x, btnPause.y, btnPause.w, btnPause.h, "暂停游戏");
 
 }
 
