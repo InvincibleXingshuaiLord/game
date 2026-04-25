@@ -20,9 +20,9 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     1
+#define PLAYER_SPEED     0.5
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.5
+#define MONSTER_SPEED    0.2
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -79,8 +79,8 @@ public:
 class Player
 {
 public:
-    int x;              //玩家X坐标
-    int y;              //玩家Y坐标
+    double x;              //玩家X坐标
+    double y;              //玩家Y坐标
     int w;              //玩家贴图宽度
     int h;              //玩家贴图高度
 
@@ -112,8 +112,8 @@ public:
 class Monster
 {
 public:
-    int x;              //怪物X坐标
-    int y;              //怪物Y坐标
+    double x;              //怪物X坐标
+    double y;              //怪物Y坐标
     int w;              //怪物贴图宽度
     int h;              //怪物贴图高度
 
@@ -140,8 +140,8 @@ public:
 class Bullet
 {
 public:
-    int x;              //子弹X坐标
-    int y;              //子弹Y坐标
+    double x;              //子弹X坐标
+    double y;              //子弹Y坐标
     int w;              //子弹贴图宽度
     int h;              //子弹贴图高度
     int speed;          //子弹移动速度
@@ -510,13 +510,19 @@ void Bullet::M_Move() {
     this->TrackPlayer(g_player);//子弹追击玩家 
 }
 
-void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
-    int dx = player.x - this->x;
-    int dy = player.y - this->y;
-    double distance = sqrt(dx * dx + dy * dy);
-    this->x += (dx / distance) * this->speed;
-    this->y += (dy / distance) * this->speed;
-    if (distance < 1.0) return;
+void Bullet::TrackPlayer(Player& player) {
+    //完全照搬怪物追击玩家的函数
+    double dx = (player.x + player.w / 2) - (this->x + this->w / 2);
+    double dy = (player.y + player.h / 2) - (this->y + this->h / 2);
+    double dist = sqrt(dx * dx + dy * dy);
+
+    if (dist < 1.0) return;
+    //平滑移动
+    double moveX = (dx / dist) * this->speed;
+    double moveY = (dy / dist) * this->speed;
+
+    this->x += moveX;
+    this->y += moveY;
 }
 
 bool Bullet::CheckBorder() {
@@ -566,11 +572,11 @@ void Monster::TrackPlayer(Player& player)
         return;
 
     // 标准化方向 + 匀速移动（最稳定写法）
-    double moveX = (dx / dist) * speed;
-    double moveY = (dy / dist) * speed;
+    double moveX = (dx / dist) * speed/2;
+    double moveY = (dy / dist) * speed/2;
 
-    x += (int)round(moveX);
-    y += (int)round(moveY);
+    x += moveX;
+    y += moveY;
 
     // 限制怪物不出屏幕，彻底杜绝卡边界抽搐
     if (x < 0) x = 0;
