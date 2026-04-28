@@ -64,7 +64,8 @@ class Player;
 class Monster;
 class Bullet;
 class GameRes;
-
+class Bloodbag;
+class EXPpack;
 // 按钮类
 class Button
 {
@@ -140,21 +141,21 @@ public:
 class Bullet
 {
 public:
-    int x;              //子弹X坐标
-    int y;              //子弹Y坐标
+    double x;              //子弹X坐标
+    double y;              //子弹Y坐标
     int w;              //子弹贴图宽度
     int h;              //子弹贴图高度
-    int speed;          //子弹移动速度
+    double speed;          //子弹移动速度
     int atk;            //子弹攻击力
     int flag;           //子弹类型  0：玩家  1：怪物
-    int mx;
-    int my;
+    double mx;
+    double my;
     bool active;        //子弹是否存在
 
 public:
     Bullet();                                 //构造函数
-    void Init(int px, int py);                     //初始化子弹位置和类型（怪物）
-    void Init(int px, int py, int pmx, int pmy);      //初始化子弹位置和类型（玩家）
+    void Init(double px, double py);                     //初始化子弹位置和类型（怪物）
+    void Init(double px, double py, double pmx, double pmy);      //初始化子弹位置和类型（玩家）
     void P_Move();                            //玩家子弹移动
     void M_Move();                            //大boss子弹移动
     void TrackPlayer(Player& player);         //boss子弹追击玩家
@@ -187,6 +188,38 @@ public:
     void Free();     //释放图片
 };
 
+//血包类
+class Bloodbag {
+public:
+    double x;               //坐标
+    double y;
+    double w;
+    double h;
+    int flag;               //小血包：0     大血包：1
+    bool active;            //存在状态
+public:
+    Bloodbag();
+    void Init(double bx, double by, int bflag);
+    void Recover();
+};
+//经验包类别
+class EXPpack {
+public:
+    double x;
+    double y;
+    double w;
+    double h;
+    bool active;
+public:
+    EXPpack();
+    void Init(double bx, double by);
+    void gainXP();
+};
+
+
+
+
+
 // 当前显示的游戏界面
 GameUI     g_curUI;
 
@@ -210,6 +243,14 @@ std::vector<Bullet>  g_bullets;
 
 // 全局怪物列表，管理所有怪物
 std::vector<Monster> g_monsters;
+
+//全局血包列表，管理所有血包
+std::vector<Bloodbag>g_bloodbag;
+
+//玩家血包装备栏
+std::vector<Bloodbag>g_pb;
+//全局经验包列表，管理所有经验包
+std::vector<EXPpack>g_EXPpack;
 
 // 全局资源对象，管理所有贴图
 GameRes    g_res;
@@ -301,6 +342,9 @@ void UpdateBullets();
 // 更新所有怪物逻辑（移动、追踪）
 void UpdateMonsters();
 
+//更新所有血包
+void UpdataBloodbags();
+
 // 碰撞检测：子弹与怪物
 void Collide_BulletMonster();
 
@@ -309,6 +353,9 @@ void Collide_PlayerMonster();
 
 // 检测是否满足升级条件
 void CheckLevelUp();
+
+//检查血包状态：玩家与血包
+void Collide_Bloodbag();
 
 // 更新无敌帧状态
 void UpdateInvincible();
@@ -331,6 +378,9 @@ void DrawMonsterHPBar(Monster& monster);
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 //用于玩法介绍界面文字绘制
 void drawtext(int x, int y, std::string s);
+
+//血包、经验包掉落概率
+void Probability();
 
 int main()
 {
@@ -476,14 +526,14 @@ Bullet::Bullet() {
     this->active = false;
 }
 
-void Bullet::Init(int px, int py, int pmx, int pmy) {
+void Bullet::Init(double px, double py, double pmx, double pmy) {
     this->x = px, this->y = py;//更新子弹初始坐标
     this->flag = 0;//设置玩家子弹
     this->mx = pmx, this->my = pmy;//记录鼠标按下的坐标
     this->active = true;//更新子弹存在状态
 }
 
-void Bullet::Init(int px, int py) {
+void Bullet::Init(double px, double py) {
     this->x = px, this->y = py;//更新子弹初始坐标
     this->flag = 1;//设置怪物子弹
     this->active = true;//更新子弹存在状态
@@ -496,13 +546,14 @@ void Bullet::P_Move() {
     dx = dy = 0;
     double vx, vy, t, s;
     vx = vy = t = s = 0;
-    dx = this->mx - (this->x + this->w / 2), dy = this->my - (this->y + this->h / 2);
+    dx = this->mx - this->x, dy = this->my - this->y;
     s = sqrt(dx * dx + dy * dy);
     t = s / this->speed;
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
     this->mx += vx; this->my += vy;
+
 }
 
 void Bullet::M_Move() {
@@ -533,7 +584,7 @@ Monster::Monster() {
     h = 64;//同上
     hp = 100;
     maxHp = 100;
-    speed = 2;
+    speed = 10;
     expDrop = 10;
     score = 10;
     active = true;
@@ -604,7 +655,79 @@ void Monster::OnDead(Player& player) {
     player.exp += expDrop;
     player.score += score;
 }
+EXPpack::EXPpack() {
+    this->x = 0;
+    this->y = 0;
+    this->w = 10;
+    this->h = 10;
+    this->active = false;
+
+}
+void EXPpack::Init(double bx, double by) {
+    this->x = bx, this->y = by;
+    this->active = true;
+}
+void EXPpack::gainXP() {
+    g_player.exp += g_player.expNeed * 0.3;
+    this->active = false;
+}
 //静行结束
+
+void Probability(Monster& monster) {
+    if (monster.type == MONSTER)//小怪
+    {
+        Bloodbag bloodbag;
+        EXPpack  exppack;
+        //5%概率掉血包和经验包
+        if (rand() % 20 == 0) {
+            //生成小血包
+            bloodbag.Init(monster.x, monster.y, 0);
+            g_bloodbag.push_back(bloodbag);
+            //生成经验包
+            exppack.Init(monster.x, monster.y);
+            g_EXPpack.push_back(exppack);
+        }
+    }
+    else if (monster.type == MINI_BOSS) //小boss
+    {
+        Bloodbag bloodbag;
+        //90%概率掉小血包,10%概率掉大血包
+        if (rand() % 10 != 0) {
+            bloodbag.Init(monster.x, monster.y, 0);//小血包
+        }
+        else {
+            bloodbag.Init(monster.x, monster.y, 1);//大血包
+        }
+        g_bloodbag.push_back(bloodbag);
+    }
+}
+
+//血包类成员函数
+Bloodbag::Bloodbag() {
+    this->x = 0;
+    this->y = 0;
+    this->w = 10;
+    this->h = 10;
+    this->flag = 0;
+    this->active = false;
+}
+
+void Bloodbag::Init(double bx, double by, int bflag) {
+    this->x = bx, this->y = by;
+    this->active = true;
+    this->flag = bflag;
+}
+
+void Bloodbag::Recover() {
+    if (this->flag == 0) {              //小血包
+        g_player.hp += g_player.maxHp * 0.3;
+    }
+    else {                              //大血包
+        g_player.hp += g_player.maxHp * 0.6;
+        g_player.maxHp += 10;
+    }
+    this->active = false;
+}
 
 void GameRes::Load() {
     //
@@ -618,7 +741,7 @@ void GameRes::Load() {
     loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
     loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
     loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
-    loadimage(&this->bgGame, "photo/dt2.jpg", 1000, 700);
+    loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
     loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
     loadimage(&this->bgWin, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->bgLose, "photo/sb1.jpg", 1000, 800);
@@ -1166,6 +1289,15 @@ void UpdateMonsters() {
     }
 }
 
+void UpdataBloodbags() {
+    //安全清理
+    vector<Bloodbag> temp;
+    for (auto& pb : g_pb)
+        if (pb.active)
+            temp.push_back(pb);
+    g_pb.swap(temp);
+}
+
 void Collide_BulletMonster()
 {
     if (g_bullets.empty() || g_monsters.empty())
@@ -1213,6 +1345,23 @@ void CheckLevelUp() {
     if (g_player.exp >= g_player.expNeed)
     {
         g_player.LevelUp();
+    }
+}
+
+void Collide_Bloodbag() {
+    if (g_bloodbag.empty())return;
+    for (int i = 0; i < g_bloodbag.size(); i++) {
+        Bloodbag& bb = g_bloodbag[i];
+        if (!bb.active)continue;
+        else if (g_player.x < bb.x + bb.w &&
+            g_player.x + g_player.w > bb.x &&
+            g_player.y < bb.y + bb.h &&
+            g_player.y + g_player.h > bb.y)
+        {
+            //将bb从g_bloodbag移到g_pb中
+            g_pb.push_back(bb);
+            g_bloodbag.erase(g_bloodbag.begin() + i);
+        }
     }
 }
 
@@ -1273,9 +1422,9 @@ void DrawGameUI() {
 }
 
 void DrawPlayerInfo() {
-   
-    putimagePNG(&g_res.imgAx,0, 10);
-    putimagePNG(&g_res.imgGj,0, 40);
+
+    putimage(0, 10, &g_res.imgAx);
+    putimage(0, 40, &g_res.imgGj);
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
