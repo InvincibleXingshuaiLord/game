@@ -6,6 +6,8 @@
 #include <windows.h>
 #include<cmath>
 #include "EasyXpng.h"
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 #define WIN_WIDTH        1000
 #define WIN_HEIGHT       700
 using namespace std;
@@ -20,9 +22,9 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     1
+#define PLAYER_SPEED     0.5
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.5
+#define MONSTER_SPEED    0.2
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -80,8 +82,8 @@ public:
 class Player
 {
 public:
-    int x;              //玩家X坐标
-    int y;              //玩家Y坐标
+    double x;              //玩家X坐标
+    double y;              //玩家Y坐标
     int w;              //玩家贴图宽度
     int h;              //玩家贴图高度
 
@@ -113,8 +115,8 @@ public:
 class Monster
 {
 public:
-    int x;              //怪物X坐标
-    int y;              //怪物Y坐标
+    double x;              //怪物X坐标
+    double y;              //怪物Y坐标
     int w;              //怪物贴图宽度
     int h;              //怪物贴图高度
 
@@ -260,10 +262,14 @@ int        g_spawnRate;
 
 // 怪物生成计时器
 int        g_spawnTimer;
-
+// 音乐音量
+int V = 200;
+char cmd[100];
+string g_currentMusicAlias;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
-
+// 音乐开关
+bool       g_isMusicOn ;    
 // 开始界面-开始游戏按钮
 Button     btnStart;
 
@@ -290,6 +296,27 @@ Button     btnRestart;
 
 // 通用退出按钮
 Button     btnExit;
+// ========== 设置界面专属按钮 ==========
+// 音乐开关按钮（开/关）
+Button btnMusicSwitch;
+// 音量增加按钮
+Button btnVolAdd;
+// 音量减少按钮
+Button btnVolSub;
+// 歌曲选择按钮 1
+Button btnMusic1;
+// 歌曲选择按钮 2
+Button btnMusic2;
+// 歌曲选择按钮 3
+Button btnMusic3;
+// 歌曲选择按钮 4
+Button btnMusic4;
+//退出按钮
+Button btnSettingBack;
+//团队返回菜单按钮
+Button teamretuen;
+//游戏介绍返回菜单按钮
+Button gameintro;
 
 // 游戏初始化（窗口、资源、变量初始值）
 void GameInit();
@@ -368,6 +395,7 @@ void DrawGameUI();
 
 // 绘制玩家UI（血条、经验条、等级、分数）
 void DrawPlayerInfo();
+
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
@@ -376,6 +404,7 @@ void DrawMonsterHPBar(Monster& monster);
 
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
+
 //用于玩法介绍界面文字绘制
 void drawtext(int x, int y, std::string s);
 
@@ -452,6 +481,8 @@ void Player::Init() {
     //无敌状态
     isInvincible = false;
     invincibleTimer = 0;
+    
+
 }
 
 void Player::Reset() {
@@ -498,6 +529,8 @@ void Player::TakeDamage(int dmg) {
     //无敌帧
     isInvincible = true;
     invincibleTimer = GetTickCount();
+    //mciSendString("stop music\\坤坤受伤.wav", NULL, 0, NULL); // 停止旧音效
+    mciSendString("play music\\坤坤受伤.wav", NULL, 0, NULL);
 }
 
 void Player::LevelUp() {
@@ -511,6 +544,8 @@ void Player::LevelUp() {
     atk += 1;     //攻击力提升
     moveSpeed += 1;//移动速度提升
     expNeed += EXP_PER_LEVEL * 1.2;//提升下一级所需经验
+    mciSendString("stop music\\升级.wav", NULL, 0, NULL); // 停止旧音效
+    mciSendString("play music\\升级.wav", NULL, 0, NULL);
 }
 
 Bullet::Bullet() {
@@ -561,13 +596,19 @@ void Bullet::M_Move() {
     this->TrackPlayer(g_player);//子弹追击玩家 
 }
 
-void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
-    int dx = player.x - this->x;
-    int dy = player.y - this->y;
-    double distance = sqrt(dx * dx + dy * dy);
-    this->x += (dx / distance) * this->speed;
-    this->y += (dy / distance) * this->speed;
-    if (distance < 1.0) return;
+void Bullet::TrackPlayer(Player& player) {
+    //完全照搬怪物追击玩家的函数
+    double dx = (player.x + player.w / 2) - (this->x + this->w / 2);
+    double dy = (player.y + player.h / 2) - (this->y + this->h / 2);
+    double dist = sqrt(dx * dx + dy * dy);
+
+    if (dist < 1.0) return;
+    //平滑移动
+    double moveX = (dx / dist) * this->speed;
+    double moveY = (dy / dist) * this->speed;
+
+    this->x += moveX;
+    this->y += moveY;
 }
 
 bool Bullet::CheckBorder() {
@@ -617,11 +658,11 @@ void Monster::TrackPlayer(Player& player)
         return;
 
     // 标准化方向 + 匀速移动（最稳定写法）
-    double moveX = (dx / dist) * speed;
-    double moveY = (dy / dist) * speed;
+    double moveX = (dx / dist) * speed/2;
+    double moveY = (dy / dist) * speed/2;
 
-    x += (int)round(moveX);
-    y += (int)round(moveY);
+    x += moveX;
+    y += moveY;
 
     // 限制怪物不出屏幕，彻底杜绝卡边界抽搐
     if (x < 0) x = 0;
@@ -651,6 +692,8 @@ void Monster::TakeDamage(int dmg, Player& player) {
     }
 }//遇到攻击怪物闪烁 是否需要加
 void Monster::OnDead(Player& player) {
+    mciSendString("stop music\\怪物死亡.wav", NULL, 0, NULL); 
+    mciSendString("play music\\怪物死亡.wav", NULL, 0, NULL);
     active = false;
     player.exp += expDrop;
     player.score += score;
@@ -739,7 +782,7 @@ void GameRes::Load() {
     loadimage(&this->imgFinalBoss, "photo/BigBoss.png", 128, 128);
     loadimage(&this->bgStart, "photo/kk1.jpg", 1100, 700);
     loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
-    loadimage(&this->bgSetting, "photo/kk1.jpg", 1100, 700);
+    loadimage(&this->bgSetting, "photo/sz1.jpg", 1100, 700);
     loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
     loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
     loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
@@ -751,7 +794,7 @@ void GameRes::Load() {
 }
 
 void GameRes::Free() {
-    delete this;
+
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
@@ -765,7 +808,7 @@ void GameInit()
     // 初始化随机数种子
     srand((unsigned)time(NULL));
 
-    // 加载游戏资源
+    // 加载游戏资源tuituittttfgg
     g_res.Load();
 
     // 初始化游戏状态
@@ -786,6 +829,35 @@ void GameInit()
     // 控制怪物多久出一个
     g_spawnRate = 1200;
     g_spawnTimer = 0;
+    // 音乐开关
+    g_isMusicOn = true;
+    //音量
+   
+    
+    //加载音乐
+   // 加载音乐（带别名）
+    mciSendString("open music\\发射.mp3 alias shoot", NULL, 0, NULL);
+    mciSendString("open music\\升级.mp3 alias levelup", NULL, 0, NULL);
+    mciSendString("open music\\哇你真的牛逼.mp3 alias win", NULL, 0, NULL);
+    mciSendString("open music\\怪物死亡.mp3 alias monsterdead", NULL, 0, NULL);
+    mciSendString("open music\\菜就多练.mp3 alias lose", NULL, 0, NULL);
+    mciSendString("open music\\坤坤受伤.mp3", NULL, 0, NULL);
+    mciSendString("open music\\鸡你太美科目三.mp3 alias jntm", NULL, 0, NULL);
+    mciSendString("open music\\你干嘛.mp3 alias ngm", NULL, 0, NULL);
+    mciSendString("open music\\Deadman.mp3 alias bgm", NULL, 0, NULL);
+    mciSendString("open music\\起坤了只因你太美.mp3 alias qkljntm", NULL, 0, NULL);
+
+    // 默认播放
+    g_currentMusicAlias = "jntm";
+    mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+
+    // 设置初始音量
+    mciSendString("setaudio lose volume to 1000", NULL, 0,NULL);
+    mciSendString("setaudio win volume to 1000", NULL, 0,NULL);
+    mciSendString("setaudio levelup volume to 700", NULL, 0,NULL);
+    mciSendString("setaudio music\\坤坤受伤.wav volume to 700", NULL, 0,NULL);
+    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+    mciSendString(cmd, NULL, 0, NULL);
 }
 
 // 重置游戏数据（重新开始一局）
@@ -828,6 +900,76 @@ void InputUpdate()
             int mx = msg.x;
             int my = msg.y;
 
+            if (g_curUI == SETTING)
+            {
+                // 音乐开关
+                if (CheckButtonClick(btnMusicSwitch))
+                {
+                    g_isMusicOn = !g_isMusicOn; // 切换开关状态
+                    if (g_isMusicOn) mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+                    else mciSendString("stop all", NULL, 0, NULL);
+                }
+                // 音量+
+                else if (CheckButtonClick(btnVolAdd))
+                {
+                    V += 50;
+                    if (V > 1000) V = 1000;
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);
+                }
+
+                // 音量-
+                else if (CheckButtonClick(btnVolSub))
+                {
+                    V -= 50;
+                    if (V < 0) V = 0;
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);
+                }
+              
+                else if (CheckButtonClick(btnMusic1))
+                {
+                    mciSendString(("stop " + g_currentMusicAlias).c_str(), NULL, 0, NULL);
+                    g_currentMusicAlias = "ngm";
+                    mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);
+                }
+                
+                // 选择歌曲2：Deadman
+                else if (CheckButtonClick(btnMusic2))
+                {
+                    mciSendString(("stop " + g_currentMusicAlias).c_str(), NULL, 0, NULL);
+                    g_currentMusicAlias = "bgm";
+                    mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);;
+                }
+                // 选择歌曲3：鸡你太美科目三
+                else if (CheckButtonClick(btnMusic3))
+                {
+                    mciSendString(("stop " + g_currentMusicAlias).c_str(), NULL, 0, NULL);
+                    g_currentMusicAlias = "jntm";
+                    mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);
+                }
+                // 选择歌曲4：起坤了只因你太美
+                else if (CheckButtonClick(btnMusic4))
+                {
+                    mciSendString(("stop " + g_currentMusicAlias).c_str(), NULL, 0, NULL);
+                    g_currentMusicAlias = "qkljntm";
+                    mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
+                    sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
+                    mciSendString(cmd, NULL, 0, NULL);
+                }
+                // 返回菜单
+               else if (CheckButtonClick(btnSettingBack))
+                {
+                    g_curUI = START;
+                }
+            }
+
             if (g_curUI == START)
             {
                 if (mx >= 600 && mx <= 730 && my >= 280 && my <= 330)
@@ -846,6 +988,9 @@ void InputUpdate()
                 else if (mx >= 600 && mx <= 730 && my >= 520 && my <= 570)
                 {
                     g_isRun = false;
+                }
+                else if (CheckButtonClick(btnSetting)) {
+                    g_curUI = SETTING;
                 }
             }
             else if (g_curUI == PAUSE)
@@ -875,8 +1020,15 @@ void InputUpdate()
                     g_curUI = START;
                 }
             }
-            else if (g_curUI == HELP || g_curUI == SETTING || g_curUI == TEAM)
+            else if (g_curUI == HELP )
             {
+                if (CheckButtonClick(gameintro)) {
+                    g_curUI = START;
+                }
+            }
+                
+            else if (g_curUI == TEAM)
+            {      if(CheckButtonClick(teamretuen))
                 g_curUI = START;
             }
             else if (g_curUI == PLAY && !g_isPause)
@@ -885,6 +1037,10 @@ void InputUpdate()
                 Bullet b;
                 b.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, mx, my);
                 g_bullets.push_back(b);
+                
+                    mciSendString("stop music\\发射.wav", NULL, 0, NULL); // 停止旧音效
+                    mciSendString("play music\\发射.wav", NULL, 0, NULL); // 播放新音效
+               
             }
         }
     }
@@ -1027,21 +1183,73 @@ void DrawHelpUI() {
     drawtext(0, 670, "控制坤坤移动方式:");
     drawtext(180, 670, "点击'W'向上移动，点击'D'向下移动，点击'A'向左移动，点击'D'向右移动");
     //绘制返回菜单
-    btnExit.x = 900;
-    btnExit.y = 650;
-    btnExit.w = 100;
-    btnExit.h = 50;
+    gameintro.x = 900;
+    gameintro.y = 650;
+    gameintro.w = 100;
+    gameintro.h = 50;
     setfillcolor(0XFFFFFF);
-    solidrectangle(btnExit.x, btnExit.y, btnExit.x + btnExit.w, btnExit.y + btnExit.h);
+    solidrectangle(gameintro.x, gameintro.y, gameintro.x + gameintro.w, gameintro.y + gameintro.h);
     setbkmode(TRANSPARENT);
     settextstyle(30, 10, "微软雅黑");
     settextcolor(0X000000);
     std::string s = "返回菜单";
-    outtextxy(btnExit.x + (btnExit.w - textwidth(s.c_str())) / 2, btnExit.y + (btnExit.h - textheight(s.c_str())) / 2, s.c_str());
+    outtextxy(gameintro.x + (gameintro.w - textwidth(s.c_str())) / 2, gameintro.y + (gameintro.h - textheight(s.c_str())) / 2, s.c_str());
 }
 
 void DrawSettingUI() {
+    putimage(0, 0, &g_res.bgSetting);
+   
+    setbkmode(TRANSPARENT);
+    settextstyle(50, 30, "隶书");
+    settextcolor(0X000000);
+    char s[50] = "请选择你的ikun进行曲";
+    //开关按钮
+    outtextxy((1000 - textwidth(s)) / 2, 30, s);
+    btnMusicSwitch.x = 200;
+    btnMusicSwitch.y = 150;
+    btnMusicSwitch.w = 100;
+    btnMusicSwitch.h = 50;
+    functionalshape(btnMusicSwitch.x, btnMusicSwitch.y, btnMusicSwitch.w, btnMusicSwitch.h, "开/关");
+    //音量+按钮
+    btnVolAdd.x = 100;
+    btnVolAdd.y = 550;
+    btnVolAdd.w = 50;
+    btnVolAdd.h = 50;
+    functionalshape(btnVolAdd.x, btnVolAdd.y, btnVolAdd.w, btnVolAdd.h, "音量+");
+    //音量-按钮
+    btnVolSub.x = 350;
+    btnVolSub.y = 550;
+    btnVolSub.w = 50;
+    btnVolSub.h = 50;
+    functionalshape(btnVolSub.x , btnVolSub.y, btnVolSub.w, btnVolSub.h, "音量-");
+    
+    btnMusic1.x = 200;
+    btnMusic1.y = 250;
+    btnMusic1.w = 100;
+    btnMusic1.h = 50;
 
+    functionalshape(btnMusic1.x, btnMusic1.y, btnMusic1.w, btnMusic1.h, "你干嘛");
+    btnMusic2.x = 200;
+    btnMusic2.y = 350;
+    btnMusic2.w = 100;
+    btnMusic2.h = 50;
+    functionalshape(btnMusic2.x, btnMusic2.y, btnMusic2.w, btnMusic2.h, "Deadman");
+
+    btnMusic3.x = 175;
+    btnMusic3.y = 450;
+    btnMusic3.w = 150;
+    btnMusic3.h = 50;
+    functionalshape(btnMusic3.x, btnMusic3.y, btnMusic3.w, btnMusic3.h, "鸡你太美科目三");
+    btnMusic4.x = 170;
+    btnMusic4.y = 550;
+    btnMusic4.w = 165;
+    btnMusic4.h = 50;
+    functionalshape(btnMusic4.x, btnMusic4.y, btnMusic4.w, btnMusic4.h, "起坤了只因你太美");
+    btnSettingBack.x = 920;
+    btnSettingBack.y = 650;
+    btnSettingBack.h = 50;
+    btnSettingBack.w = 80;
+    functionalshape(btnSettingBack.x, btnSettingBack.y, btnSettingBack.w, btnSettingBack.h, "返回菜单");
 }
 
 void DrawTeamUI() {
@@ -1061,11 +1269,11 @@ void DrawTeamUI() {
     drawtext(0, 265, "信息官-小诺：古希腊掌管逻辑的神，负责管理游戏逻辑。");
     drawtext(0, 300, "技术官-尘风：架构之神，负责游戏架构、原型图、玩家类。");
     drawtext(0, 335, "技术官-小康：摸鱼之王，负责游戏界面绘制。");
-    btnExit.x = 920;
-    btnExit.y = 650;
-    btnExit.w = 80;
-    btnExit.h = 50;
-    functionalshape(btnExit.x, btnExit.y, btnExit.w, btnExit.h, "返回菜单");
+    teamretuen.x = 920;
+    teamretuen.y = 650;
+    teamretuen.w = 80;
+    teamretuen.h = 50;
+    functionalshape(teamretuen.x, teamretuen.y, teamretuen.w, teamretuen.h, "返回菜单");
 
 
 
@@ -1379,6 +1587,8 @@ void CheckGameEnd()
     // 玩家血量小于等于0时游戏失败
     if (g_player.hp <= 0)
     {
+        mciSendString("stop music\\菜就多练.wav", NULL, 0, NULL); // 停止旧音效
+        mciSendString("play music\\菜就多练.wav", NULL, 0, NULL);
         g_isGameOver = true;
         g_isWin = false;
         g_curUI = SETTLEMENT;
@@ -1400,6 +1610,8 @@ void CheckGameEnd()
 
         if (bossAlive == false)
         {
+            mciSendString("stop music\\哇你真的牛逼.wav", NULL, 0, NULL); // 停止旧音效
+            mciSendString("play music\\哇你真的牛逼.wav", NULL, 0, NULL);
             g_isGameOver = true;
             g_isWin = true;
             g_curUI = SETTLEMENT;
