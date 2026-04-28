@@ -348,6 +348,7 @@ void DrawGameUI();
 
 // 绘制玩家UI（血条、经验条、等级、分数）
 void DrawPlayerInfo();
+
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
@@ -356,6 +357,7 @@ void DrawMonsterHPBar(Monster& monster);
 
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
+
 //用于玩法介绍界面文字绘制
 void drawtext(int x, int y, std::string s);
 
@@ -669,7 +671,7 @@ void GameRes::Load() {
 }
 
 void GameRes::Free() {
-    delete this;
+
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
