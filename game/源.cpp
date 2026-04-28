@@ -713,6 +713,7 @@ void GameInit()
     mciSendString("open music\\坤坤受伤.mp3", NULL, 0, NULL);
     mciSendString("open music\\鸡你太美科目三.mp3 alias jntm", NULL, 0, NULL);
     mciSendString("open music\\你干嘛.mp3 alias ngm", NULL, 0, NULL);
+    mciSendString("open music\\Deadman.mp3 alias bgm", NULL, 0, NULL);
     mciSendString("open music\\起坤了只因你太美.mp3 alias qkljntm", NULL, 0, NULL);
 
     // 默认播放
