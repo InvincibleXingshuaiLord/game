@@ -784,7 +784,7 @@ void GameRes::Load() {
     loadimage(&this->bgHelp, "photo/js1.jpg", 1000, 700);
     loadimage(&this->bgSetting, "photo/sz1.jpg", 1100, 700);
     loadimage(&this->bgTeam, "photo/td1.png", 1000, 800);
-    loadimage(&this->bgGame, "photo/dt1.jpg", 1000, 700);
+    loadimage(&this->bgGame, "photo/dt2.jpg", 1000, 700);
     loadimage(&this->bgPause, "photo/zt1.jpg", 1000, 700);
     loadimage(&this->bgWin, "photo/sl2.jpg", 1000, 800);
     loadimage(&this->bgLose, "photo/sb1.jpg", 1000, 800);
@@ -1635,8 +1635,8 @@ void DrawGameUI() {
 
 void DrawPlayerInfo() {
 
-    putimage(0, 10, &g_res.imgAx);
-    putimage(0, 40, &g_res.imgGj);
+    putimagePNG(&g_res.imgAx,0, 10);
+    putimagePNG(&g_res.imgGj,0, 40);
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
