@@ -22,9 +22,9 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     0.5
+#define PLAYER_SPEED     1
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.2
+#define MONSTER_SPEED    0.5
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -66,8 +66,7 @@ class Player;
 class Monster;
 class Bullet;
 class GameRes;
-class Bloodbag;
-class EXPpack;
+
 // 按钮类
 class Button
 {
@@ -82,8 +81,8 @@ public:
 class Player
 {
 public:
-    double x;              //玩家X坐标
-    double y;              //玩家Y坐标
+    int x;              //玩家X坐标
+    int y;              //玩家Y坐标
     int w;              //玩家贴图宽度
     int h;              //玩家贴图高度
 
@@ -115,8 +114,8 @@ public:
 class Monster
 {
 public:
-    double x;              //怪物X坐标
-    double y;              //怪物Y坐标
+    int x;              //怪物X坐标
+    int y;              //怪物Y坐标
     int w;              //怪物贴图宽度
     int h;              //怪物贴图高度
 
@@ -143,21 +142,21 @@ public:
 class Bullet
 {
 public:
-    double x;              //子弹X坐标
-    double y;              //子弹Y坐标
+    int x;              //子弹X坐标
+    int y;              //子弹Y坐标
     int w;              //子弹贴图宽度
     int h;              //子弹贴图高度
-    double speed;          //子弹移动速度
+    int speed;          //子弹移动速度
     int atk;            //子弹攻击力
     int flag;           //子弹类型  0：玩家  1：怪物
-    double mx;
-    double my;
+    int mx;
+    int my;
     bool active;        //子弹是否存在
 
 public:
     Bullet();                                 //构造函数
-    void Init(double px, double py);                     //初始化子弹位置和类型（怪物）
-    void Init(double px, double py, double pmx, double pmy);      //初始化子弹位置和类型（玩家）
+    void Init(int px, int py);                     //初始化子弹位置和类型（怪物）
+    void Init(int px, int py, int pmx, int pmy);      //初始化子弹位置和类型（玩家）
     void P_Move();                            //玩家子弹移动
     void M_Move();                            //大boss子弹移动
     void TrackPlayer(Player& player);         //boss子弹追击玩家
@@ -190,38 +189,6 @@ public:
     void Free();     //释放图片
 };
 
-//血包类
-class Bloodbag {
-public:
-    double x;               //坐标
-    double y;
-    double w;
-    double h;
-    int flag;               //小血包：0     大血包：1
-    bool active;            //存在状态
-public:
-    Bloodbag();
-    void Init(double bx, double by, int bflag);
-    void Recover();
-};
-//经验包类别
-class EXPpack {
-public:
-    double x;
-    double y;
-    double w;
-    double h;
-    bool active;
-public:
-    EXPpack();
-    void Init(double bx, double by);
-    void gainXP();
-};
-
-
-
-
-
 // 当前显示的游戏界面
 GameUI     g_curUI;
 
@@ -246,14 +213,6 @@ std::vector<Bullet>  g_bullets;
 // 全局怪物列表，管理所有怪物
 std::vector<Monster> g_monsters;
 
-//全局血包列表，管理所有血包
-std::vector<Bloodbag>g_bloodbag;
-
-//玩家血包装备栏
-std::vector<Bloodbag>g_pb;
-//全局经验包列表，管理所有经验包
-std::vector<EXPpack>g_EXPpack;
-
 // 全局资源对象，管理所有贴图
 GameRes    g_res;
 
@@ -269,7 +228,7 @@ string g_currentMusicAlias;
 // 是否已经生成最终BOSS
 bool       g_hasFinalBoss;
 // 音乐开关
-bool       g_isMusicOn ;    
+bool       g_isMusicOn;
 // 开始界面-开始游戏按钮
 Button     btnStart;
 
@@ -369,9 +328,6 @@ void UpdateBullets();
 // 更新所有怪物逻辑（移动、追踪）
 void UpdateMonsters();
 
-//更新所有血包
-void UpdataBloodbags();
-
 // 碰撞检测：子弹与怪物
 void Collide_BulletMonster();
 
@@ -380,9 +336,6 @@ void Collide_PlayerMonster();
 
 // 检测是否满足升级条件
 void CheckLevelUp();
-
-//检查血包状态：玩家与血包
-void Collide_Bloodbag();
 
 // 更新无敌帧状态
 void UpdateInvincible();
@@ -395,7 +348,6 @@ void DrawGameUI();
 
 // 绘制玩家UI（血条、经验条、等级、分数）
 void DrawPlayerInfo();
-
 // 绘制所有实体（玩家、怪物、子弹）
 void DrawEntities();
 
@@ -404,12 +356,8 @@ void DrawMonsterHPBar(Monster& monster);
 
 //用于开始界面的功能图形绘制
 void functionalshape(int rx, int ry, int rw, int rh, std::string s);
-
 //用于玩法介绍界面文字绘制
 void drawtext(int x, int y, std::string s);
-
-//血包、经验包掉落概率
-void Probability();
 
 int main()
 {
@@ -481,7 +429,7 @@ void Player::Init() {
     //无敌状态
     isInvincible = false;
     invincibleTimer = 0;
-    
+
 
 }
 
@@ -561,14 +509,14 @@ Bullet::Bullet() {
     this->active = false;
 }
 
-void Bullet::Init(double px, double py, double pmx, double pmy) {
+void Bullet::Init(int px, int py, int pmx, int pmy) {
     this->x = px, this->y = py;//更新子弹初始坐标
     this->flag = 0;//设置玩家子弹
     this->mx = pmx, this->my = pmy;//记录鼠标按下的坐标
     this->active = true;//更新子弹存在状态
 }
 
-void Bullet::Init(double px, double py) {
+void Bullet::Init(int px, int py) {
     this->x = px, this->y = py;//更新子弹初始坐标
     this->flag = 1;//设置怪物子弹
     this->active = true;//更新子弹存在状态
@@ -581,14 +529,13 @@ void Bullet::P_Move() {
     dx = dy = 0;
     double vx, vy, t, s;
     vx = vy = t = s = 0;
-    dx = this->mx - this->x, dy = this->my - this->y;
+    dx = this->mx - (this->x + this->w / 2), dy = this->my - (this->y + this->h / 2);
     s = sqrt(dx * dx + dy * dy);
     t = s / this->speed;
     vx = dx / t; vy = dy / t;//计算子弹x，y速度
 
     this->x += vx; this->y += vy;//更新子弹坐标
     this->mx += vx; this->my += vy;
-
 }
 
 void Bullet::M_Move() {
@@ -596,19 +543,13 @@ void Bullet::M_Move() {
     this->TrackPlayer(g_player);//子弹追击玩家 
 }
 
-void Bullet::TrackPlayer(Player& player) {
-    //完全照搬怪物追击玩家的函数
-    double dx = (player.x + player.w / 2) - (this->x + this->w / 2);
-    double dy = (player.y + player.h / 2) - (this->y + this->h / 2);
-    double dist = sqrt(dx * dx + dy * dy);
-
-    if (dist < 1.0) return;
-    //平滑移动
-    double moveX = (dx / dist) * this->speed;
-    double moveY = (dy / dist) * this->speed;
-
-    this->x += moveX;
-    this->y += moveY;
+void Bullet::TrackPlayer(Player& player) {//完全照搬怪物追击玩家的函数
+    int dx = player.x - this->x;
+    int dy = player.y - this->y;
+    double distance = sqrt(dx * dx + dy * dy);
+    this->x += (dx / distance) * this->speed;
+    this->y += (dy / distance) * this->speed;
+    if (distance < 1.0) return;
 }
 
 bool Bullet::CheckBorder() {
@@ -625,7 +566,7 @@ Monster::Monster() {
     h = 64;//同上
     hp = 100;
     maxHp = 100;
-    speed = 10;
+    speed = 2;
     expDrop = 10;
     score = 10;
     active = true;
@@ -658,11 +599,11 @@ void Monster::TrackPlayer(Player& player)
         return;
 
     // 标准化方向 + 匀速移动（最稳定写法）
-    double moveX = (dx / dist) * speed/2;
-    double moveY = (dy / dist) * speed/2;
+    double moveX = (dx / dist) * speed;
+    double moveY = (dy / dist) * speed;
 
-    x += moveX;
-    y += moveY;
+    x += (int)round(moveX);
+    y += (int)round(moveY);
 
     // 限制怪物不出屏幕，彻底杜绝卡边界抽搐
     if (x < 0) x = 0;
@@ -692,85 +633,13 @@ void Monster::TakeDamage(int dmg, Player& player) {
     }
 }//遇到攻击怪物闪烁 是否需要加
 void Monster::OnDead(Player& player) {
-    mciSendString("stop music\\怪物死亡.wav", NULL, 0, NULL); 
+    mciSendString("stop music\\怪物死亡.wav", NULL, 0, NULL);
     mciSendString("play music\\怪物死亡.wav", NULL, 0, NULL);
     active = false;
     player.exp += expDrop;
     player.score += score;
 }
-EXPpack::EXPpack() {
-    this->x = 0;
-    this->y = 0;
-    this->w = 10;
-    this->h = 10;
-    this->active = false;
-
-}
-void EXPpack::Init(double bx, double by) {
-    this->x = bx, this->y = by;
-    this->active = true;
-}
-void EXPpack::gainXP() {
-    g_player.exp += g_player.expNeed * 0.3;
-    this->active = false;
-}
 //静行结束
-
-void Probability(Monster& monster) {
-    if (monster.type == MONSTER)//小怪
-    {
-        Bloodbag bloodbag;
-        EXPpack  exppack;
-        //5%概率掉血包和经验包
-        if (rand() % 20 == 0) {
-            //生成小血包
-            bloodbag.Init(monster.x, monster.y, 0);
-            g_bloodbag.push_back(bloodbag);
-            //生成经验包
-            exppack.Init(monster.x, monster.y);
-            g_EXPpack.push_back(exppack);
-        }
-    }
-    else if (monster.type == MINI_BOSS) //小boss
-    {
-        Bloodbag bloodbag;
-        //90%概率掉小血包,10%概率掉大血包
-        if (rand() % 10 != 0) {
-            bloodbag.Init(monster.x, monster.y, 0);//小血包
-        }
-        else {
-            bloodbag.Init(monster.x, monster.y, 1);//大血包
-        }
-        g_bloodbag.push_back(bloodbag);
-    }
-}
-
-//血包类成员函数
-Bloodbag::Bloodbag() {
-    this->x = 0;
-    this->y = 0;
-    this->w = 10;
-    this->h = 10;
-    this->flag = 0;
-    this->active = false;
-}
-
-void Bloodbag::Init(double bx, double by, int bflag) {
-    this->x = bx, this->y = by;
-    this->active = true;
-    this->flag = bflag;
-}
-
-void Bloodbag::Recover() {
-    if (this->flag == 0) {              //小血包
-        g_player.hp += g_player.maxHp * 0.3;
-    }
-    else {                              //大血包
-        g_player.hp += g_player.maxHp * 0.6;
-        g_player.maxHp += 10;
-    }
-    this->active = false;
-}
 
 void GameRes::Load() {
     //
@@ -794,7 +663,7 @@ void GameRes::Load() {
 }
 
 void GameRes::Free() {
-
+    delete this;
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
@@ -808,7 +677,7 @@ void GameInit()
     // 初始化随机数种子
     srand((unsigned)time(NULL));
 
-    // 加载游戏资源tuituittttfgg
+    // 加载游戏资源
     g_res.Load();
 
     // 初始化游戏状态
@@ -832,8 +701,8 @@ void GameInit()
     // 音乐开关
     g_isMusicOn = true;
     //音量
-   
-    
+
+
     //加载音乐
    // 加载音乐（带别名）
     mciSendString("open music\\发射.mp3 alias shoot", NULL, 0, NULL);
@@ -852,10 +721,10 @@ void GameInit()
     mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
 
     // 设置初始音量
-    mciSendString("setaudio lose volume to 1000", NULL, 0,NULL);
-    mciSendString("setaudio win volume to 1000", NULL, 0,NULL);
-    mciSendString("setaudio levelup volume to 700", NULL, 0,NULL);
-    mciSendString("setaudio music\\坤坤受伤.wav volume to 700", NULL, 0,NULL);
+    mciSendString("setaudio lose volume to 1000", NULL, 0, NULL);
+    mciSendString("setaudio win volume to 1000", NULL, 0, NULL);
+    mciSendString("setaudio levelup volume to 700", NULL, 0, NULL);
+    mciSendString("setaudio music\\坤坤受伤.wav volume to 700", NULL, 0, NULL);
     sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
     mciSendString(cmd, NULL, 0, NULL);
 }
@@ -926,7 +795,7 @@ void InputUpdate()
                     sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
                     mciSendString(cmd, NULL, 0, NULL);
                 }
-              
+
                 else if (CheckButtonClick(btnMusic1))
                 {
                     mciSendString(("stop " + g_currentMusicAlias).c_str(), NULL, 0, NULL);
@@ -935,7 +804,7 @@ void InputUpdate()
                     sprintf_s(cmd, "setaudio %s volume to %d", g_currentMusicAlias.c_str(), V);
                     mciSendString(cmd, NULL, 0, NULL);
                 }
-                
+
                 // 选择歌曲2：Deadman
                 else if (CheckButtonClick(btnMusic2))
                 {
@@ -964,7 +833,7 @@ void InputUpdate()
                     mciSendString(cmd, NULL, 0, NULL);
                 }
                 // 返回菜单
-               else if (CheckButtonClick(btnSettingBack))
+                else if (CheckButtonClick(btnSettingBack))
                 {
                     g_curUI = START;
                 }
@@ -1020,16 +889,17 @@ void InputUpdate()
                     g_curUI = START;
                 }
             }
-            else if (g_curUI == HELP )
+            else if (g_curUI == HELP)
             {
                 if (CheckButtonClick(gameintro)) {
                     g_curUI = START;
                 }
             }
-                
+
             else if (g_curUI == TEAM)
-            {      if(CheckButtonClick(teamretuen))
-                g_curUI = START;
+            {
+                if (CheckButtonClick(teamretuen))
+                    g_curUI = START;
             }
             else if (g_curUI == PLAY && !g_isPause)
             {
@@ -1037,10 +907,10 @@ void InputUpdate()
                 Bullet b;
                 b.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, mx, my);
                 g_bullets.push_back(b);
-                
-                    mciSendString("stop music\\发射.wav", NULL, 0, NULL); // 停止旧音效
-                    mciSendString("play music\\发射.wav", NULL, 0, NULL); // 播放新音效
-               
+
+                mciSendString("stop music\\发射.wav", NULL, 0, NULL); // 停止旧音效
+                mciSendString("play music\\发射.wav", NULL, 0, NULL); // 播放新音效
+
             }
         }
     }
@@ -1198,7 +1068,7 @@ void DrawHelpUI() {
 
 void DrawSettingUI() {
     putimage(0, 0, &g_res.bgSetting);
-   
+
     setbkmode(TRANSPARENT);
     settextstyle(50, 30, "隶书");
     settextcolor(0X000000);
@@ -1221,8 +1091,8 @@ void DrawSettingUI() {
     btnVolSub.y = 550;
     btnVolSub.w = 50;
     btnVolSub.h = 50;
-    functionalshape(btnVolSub.x , btnVolSub.y, btnVolSub.w, btnVolSub.h, "音量-");
-    
+    functionalshape(btnVolSub.x, btnVolSub.y, btnVolSub.w, btnVolSub.h, "音量-");
+
     btnMusic1.x = 200;
     btnMusic1.y = 250;
     btnMusic1.w = 100;
@@ -1497,15 +1367,6 @@ void UpdateMonsters() {
     }
 }
 
-void UpdataBloodbags() {
-    //安全清理
-    vector<Bloodbag> temp;
-    for (auto& pb : g_pb)
-        if (pb.active)
-            temp.push_back(pb);
-    g_pb.swap(temp);
-}
-
 void Collide_BulletMonster()
 {
     if (g_bullets.empty() || g_monsters.empty())
@@ -1553,23 +1414,6 @@ void CheckLevelUp() {
     if (g_player.exp >= g_player.expNeed)
     {
         g_player.LevelUp();
-    }
-}
-
-void Collide_Bloodbag() {
-    if (g_bloodbag.empty())return;
-    for (int i = 0; i < g_bloodbag.size(); i++) {
-        Bloodbag& bb = g_bloodbag[i];
-        if (!bb.active)continue;
-        else if (g_player.x < bb.x + bb.w &&
-            g_player.x + g_player.w > bb.x &&
-            g_player.y < bb.y + bb.h &&
-            g_player.y + g_player.h > bb.y)
-        {
-            //将bb从g_bloodbag移到g_pb中
-            g_pb.push_back(bb);
-            g_bloodbag.erase(g_bloodbag.begin() + i);
-        }
     }
 }
 
