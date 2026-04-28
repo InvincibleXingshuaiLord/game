@@ -685,7 +685,7 @@ void GameInit()
     // 初始化随机数种子
     srand((unsigned)time(NULL));
 
-    // 加载游戏资源
+    // 加载游戏资源tuituittttfgg
     g_res.Load();
 
     // 初始化游戏状态
