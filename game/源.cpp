@@ -775,7 +775,7 @@ void InputUpdate()
                 if (CheckButtonClick(btnMusicSwitch))
                 {
                     g_isMusicOn = !g_isMusicOn; // ÇÐ»»¿ª¹Ø×´Ì¬
-                    if (g_isMusicOn) mciSendString("play music\\Deadman.mp3 repeat", NULL, 0, NULL);
+                    if (g_isMusicOn) mciSendString(("play " + g_currentMusicAlias + " repeat").c_str(), NULL, 0, NULL);
                     else mciSendString("stop all", NULL, 0, NULL);
                 }
                 // ÒôÁ¿+
