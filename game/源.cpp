@@ -286,7 +286,6 @@ void GameReset();
 // 输入更新（键盘+鼠标消息处理）
 void InputUpdate();
 
-// 检测鼠标是否点击指定按钮
 bool CheckButtonClick(Button& btn);
 
 // 绘制按钮（文字+背景+悬浮效果）
@@ -395,6 +394,7 @@ int main()
         case PAUSE:      DrawPauseUI();     break;
         case SETTLEMENT: DrawSettlementUI(); break;
         }
+            g_player.Move();
         FlushBatchDraw();
 
     }
@@ -753,7 +753,7 @@ void InputUpdate()
 {
     // ExMessage msg;
 
-    while (peekmessage(&msg, EM_MOUSE | EM_KEY))
+    while (peekmessage(&msg, EM_MOUSE | EM_KEY, true))
     {
         if (msg.message == WM_KEYDOWN)
         {
@@ -906,6 +906,7 @@ void InputUpdate()
                 // 安全创建子弹
                 Bullet b;
                 b.Init(g_player.x + g_player.w / 2, g_player.y + g_player.h / 2, mx, my);
+                b.atk = g_player.atk;
                 g_bullets.push_back(b);
 
                 mciSendString("stop music\\发射.wav", NULL, 0, NULL); // 停止旧音效
