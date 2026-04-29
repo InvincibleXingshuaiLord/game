@@ -202,6 +202,8 @@ public:
     void Init(double bx,double by,int bflag);
     void Recover();
 };
+//boss数量
+int FinalBossCount;
 
 // 当前显示的游戏界面
 GameUI     g_curUI;
@@ -362,7 +364,7 @@ void functionalshape(int rx, int ry, int rw, int rh, std::string s);
 void drawtext(int x, int y, std::string s);
 
 //血包、经验包掉落概率
-void Probability();
+void Probability(Monster& monster);
 
 int main()
 {
@@ -1138,6 +1140,7 @@ void DrawSettlementUI() {
 
 }
 
+int flag[5];
 // 游戏逻辑每帧更新
 void GameUpdate()
 {
@@ -1147,6 +1150,16 @@ void GameUpdate()
     {
         SpawnMonster();
         g_spawnTimer = 0;
+    }
+    int ind = g_player.level / 5;
+    if (g_player.level % 5 == 0 ) {
+        if (flag[ind] == 0) {
+            SpawnMiniBoss();
+            flag[ind] = 1;
+        }
+    }
+    if (g_player.level == 20 && FinalBossCount == 0) {
+        SpawnFinalBoss();
     }
 
 
@@ -1198,7 +1211,6 @@ void SpawnMiniBoss() {
     miniBoss.speed = MONSTER_SPEED;
     miniBoss.expDrop = 50;         // 掉落经验
     miniBoss.score = 200;          // 击杀得分
-
     g_monsters.push_back(miniBoss);
 }
 
@@ -1213,9 +1225,9 @@ void SpawnFinalBoss() {
     finalBoss.speed = MONSTER_SPEED;
     finalBoss.expDrop = 500;       // 掉落经验
     finalBoss.score = 1000;        // 击杀得分
-
     g_monsters.push_back(finalBoss);
     g_hasFinalBoss = true;
+    FinalBossCount++;
 }
 
 void UpdateBullets()
@@ -1254,14 +1266,6 @@ void UpdateMonsters() {
     }
 }
 
-void UpdataBloodbags() {
-    //安全清理
-    vector<Bloodbag> temp;
-    for (auto& pb : g_pb)
-        if (pb.active)
-            temp.push_back(pb);
-    g_pb.swap(temp);
-}
 
 void UpdataBloodbags() {
     //安全清理
