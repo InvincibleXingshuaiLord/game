@@ -757,7 +757,6 @@ void GameRes::Load() {
 }
 
 void GameRes::Free() {
-    delete this;
 }
 
 // 游戏初始化（窗口、资源、变量初始值）
