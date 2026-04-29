@@ -24,7 +24,7 @@ ExMessage msg = { 0 };
 //speed，用帧率实现速度
 #define PLAYER_SPEED     1
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.02
+#define MONSTER_SPEED    0.05
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -538,7 +538,7 @@ Bullet::Bullet() {
     this->mx = 0;
     this->my = 0;
     this->speed = BULLET_SPEED;
-    this->atk = 1;
+    this->atk = PLAYER_INIT_ATK;
 
     this->active = false;
 }
@@ -789,7 +789,7 @@ void GameInit()
     g_monsters.clear();
 
     // 控制怪物多久出一个
-    g_spawnRate = 1200;
+    g_spawnRate = 600;
     g_spawnTimer = 0;
     // 音乐开关
     g_isMusicOn = true;
@@ -1395,7 +1395,7 @@ void SpawnMonster() {
     monster.type = MONSTER;
     monster.active = true;
 
-    monster.maxHp = 5;             // 血量5点
+    monster.maxHp = 5 + 5 * g_player.level;             // 血量5点
     monster.hp = monster.maxHp;
     monster.speed = MONSTER_SPEED;
     monster.expDrop = 5;           // 掉落经验
