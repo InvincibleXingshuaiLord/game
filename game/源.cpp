@@ -192,14 +192,14 @@ public:
 class Bloodbag {
 public:
     double x;               //����
-    double y; 
+    double y;
     double w;
     double h;
     int flag;               //СѪ����0     ��Ѫ����1
     bool active;            //����״̬
 public:
     Bloodbag();
-    void Init(double bx,double by,int bflag);
+    void Init(double bx, double by, int bflag);
     void Recover();
 };
 
@@ -231,7 +231,7 @@ std::vector<Monster> g_monsters;
 std::vector<Bloodbag>g_bloodbag;
 
 //���Ѫ��װ����
-std::vector<Bloodbag>g_bloodbag;
+std::vector<Bloodbag>g_pb;
 
 
 // ȫ����Դ���󣬹���������ͼ
@@ -535,7 +535,7 @@ void Bullet::P_Move() {
 
     this->x += vx; this->y += vy;//�����ӵ�����
     this->mx += vx; this->my += vy;
-    
+
 }
 
 void Bullet::M_Move() {
@@ -581,46 +581,37 @@ void Monster::RandomSpawn() {
     int maxx = 1000;
     int maxy = 700;
     posx = rand() % (maxx - minx + 1) + minx;
-    int attempts = 0;
-    do {
-        posx = rand() % (maxx - minx + 1) + minx;
-        posy = rand() % (maxy - miny + 1) + miny;
-        attempts++;
-    } while (attempts < 50 && abs(posx - WIN_WIDTH / 2) < 150 && abs(posy - WIN_HEIGHT / 2) < 150);
+    posy = rand() % (maxy - miny + 1) + miny;
     x = posx;
     y = posy;
 
 }
 
-void Monster::TrackPlayer(Player& player){
-    // 计算朝向玩家的方向
+void Monster::TrackPlayer(Player& player)
+{
     int dx = player.x + player.w / 2 - (x + w / 2);
     int dy = player.y + player.h / 2 - (y + h / 2);
+
     double dist = sqrt((double)dx * (double)dx + (double)dy * (double)dy);
+    if (dist < 8.0)
+        return;
 
-    // 距离过近时停止，防止抖动
-    if (dist < 8.0) return;
-
-    // 基础移动方向（朝向玩家）
     double moveX = ((double)dx / dist) * speed;
     double moveY = ((double)dy / dist) * speed;
 
-    // 自由移动：叠加随机扰动，让怪物不会完全贴死玩家
+    // jitter for free movement
     double jitterX = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
     double jitterY = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
-
     moveX += jitterX;
     moveY += jitterY;
 
     x += (int)round(moveX);
     y += (int)round(moveY);
 
-    // 屏幕边界限制
     if (x < 0) x = 0;
     if (y < 0) y = 0;
     if (x + w > WIN_WIDTH)  x = WIN_WIDTH - w;
     if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
-}
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
@@ -630,7 +621,6 @@ void Monster::ShootMonsterBullet(Player& player) {
     bullet.speed = 3;
     bullet.atk = 1;
     bullet.active = true;
-    g_bullets.push_back(bullet);
 }
 
 void Monster::TakeDamage(int dmg, Player& player) {
@@ -645,21 +635,20 @@ void Monster::TakeDamage(int dmg, Player& player) {
     }
 }//��������������˸ �Ƿ���Ҫ��
 void Monster::OnDead(Player& player) {
-    Probability(*this);
     active = false;
     player.exp += expDrop;
     player.score += score;
 }
 //���н���
 
-void Probability(Monster&monster) {
+void Probability(Monster& monster) {
     if (monster.type == MONSTER)//С��
     {
         Bloodbag bloodbag;
         //5%���ʵ�Ѫ���;����
         if (rand() % 20 == 0) {
             //����СѪ��
-            bloodbag.Init(monster.x, monster.y,0);
+            bloodbag.Init(monster.x, monster.y, 0);
             g_bloodbag.push_back(bloodbag);
             //���ɾ����
 
@@ -690,11 +679,9 @@ Bloodbag::Bloodbag() {
     this->active = false;
 }
 
-void Bloodbag::Init(double bx,double by,int bflag) {
+void Bloodbag::Init(double bx, double by, int bflag) {
     this->x = bx, this->y = by;
     this->active = true;
-    if (bflag == 0) { this->w = 12, this->h = 12; }
-    else { this->w = 18, this->h = 18; }
     this->flag = bflag;
 }
 
@@ -1178,14 +1165,12 @@ void GameUpdate()
     Collide_PlayerMonster();
 
     // �������Ƿ�����
-    Collide_Bloodbag();
     CheckLevelUp();
 
     // ��������޵�֡״̬
     UpdateInvincible();
 
     // �����Ϸ�Ƿ������ʤ��/ʧ�ܣ�
-    UpdataBloodbags();
     CheckGameEnd();
 }
 
@@ -1252,7 +1237,7 @@ void UpdateBullets()
     }
 
     // ��ȫ����
-     vector<Bullet> temp;
+    vector<Bullet> temp;
     for (auto& b : g_bullets)
         if (b.active)
             temp.push_back(b);
@@ -1318,7 +1303,7 @@ void Collide_PlayerMonster() {
             (g_player.y < m.y + m.h) && (g_player.y + g_player.h > m.y);
 
         if (collide) {
-        if (!g_player.isInvincible) { g_player.TakeDamage(10); }
+            g_player.TakeDamage(10);
         }
     }
 }
@@ -1333,14 +1318,15 @@ void CheckLevelUp() {
 void Collide_Bloodbag() {
     if (g_bloodbag.empty())return;
     for (int i = 0; i < g_bloodbag.size(); i++) {
-        Bloodbag &bb = g_bloodbag[i];
+        Bloodbag& bb = g_bloodbag[i];
         if (!bb.active)continue;
         else if (g_player.x < bb.x + bb.w &&
-             g_player.x + g_player.w > bb.x &&
-             g_player.y < bb.y + bb.h &&
-             g_player.y + g_player.h > bb.y)
+            g_player.x + g_player.w > bb.x &&
+            g_player.y < bb.y + bb.h &&
+            g_player.y + g_player.h > bb.y)
         {
-            bb.Recover();
+            //��bb��g_bloodbag�Ƶ�g_pb��
+            g_pb.push_back(bb);
             g_bloodbag.erase(g_bloodbag.begin() + i);
         }
     }
@@ -1404,8 +1390,8 @@ void DrawGameUI() {
 
 void DrawPlayerInfo() {
 
-    putimagePNG(&g_res.imgAx,0, 10);
-    putimagePNG(&g_res.imgGj,0, 40);
+    putimage(0, 10, &g_res.imgAx);
+    putimage(0, 40, &g_res.imgGj);
     //���������С�͸�ʽ
     settextstyle(25, 0, "΢���ź�");
     setbkmode(TRANSPARENT);
