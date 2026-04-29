@@ -1632,8 +1632,8 @@ void DrawMonsterHPBar(Monster& monster)
 {
     int barW = monster.w;              // 血条宽度 = 怪物宽度
     int barH = 6;                      // 血条高度
-    int barX = monster.x;              // 血条X = 怪物X
-    int barY = monster.y - barH - 4;   // 血条在怪物头顶上方
+    int barX = (int)monster.x;              // 血条X = 怪物X
+    int barY = (int)monster.y - barH - 4;   // 血条在怪物头顶上方
 
     // 血条背景（深灰）
     setfillcolor(RGB(80, 80, 80));
