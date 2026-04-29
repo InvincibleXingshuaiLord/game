@@ -22,7 +22,7 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     0.5
+#define PLAYER_SPEED     1
 #define BULLET_SPEED     2
 #define MONSTER_SPEED    0.2
 
