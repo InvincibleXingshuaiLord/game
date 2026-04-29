@@ -192,14 +192,14 @@ public:
 class Bloodbag {
 public:
     double x;               //坐标
-    double y;
+    double y; 
     double w;
     double h;
     int flag;               //小血包：0     大血包：1
     bool active;            //存在状态
 public:
     Bloodbag();
-    void Init(double bx, double by, int bflag);
+    void Init(double bx,double by,int bflag);
     void Recover();
 };
 
@@ -535,7 +535,7 @@ void Bullet::P_Move() {
 
     this->x += vx; this->y += vy;//更新子弹坐标
     this->mx += vx; this->my += vy;
-
+    
 }
 
 void Bullet::M_Move() {
@@ -639,14 +639,14 @@ void Monster::OnDead(Player& player) {
 }
 //静行结束
 
-void Probability(Monster& monster) {
+void Probability(Monster&monster) {
     if (monster.type == MONSTER)//小怪
     {
         Bloodbag bloodbag;
         //5%概率掉血包和经验包
         if (rand() % 20 == 0) {
             //生成小血包
-            bloodbag.Init(monster.x, monster.y, 0);
+            bloodbag.Init(monster.x, monster.y,0);
             g_bloodbag.push_back(bloodbag);
             //生成经验包
 
@@ -677,7 +677,7 @@ Bloodbag::Bloodbag() {
     this->active = false;
 }
 
-void Bloodbag::Init(double bx, double by, int bflag) {
+void Bloodbag::Init(double bx,double by,int bflag) {
     this->x = bx, this->y = by;
     this->active = true;
     this->flag = bflag;
@@ -1235,7 +1235,7 @@ void UpdateBullets()
     }
 
     // 安全清理
-    vector<Bullet> temp;
+     vector<Bullet> temp;
     for (auto& b : g_bullets)
         if (b.active)
             temp.push_back(b);
@@ -1252,6 +1252,15 @@ void UpdateMonsters() {
             m.TrackPlayer(g_player);
         }
     }
+}
+
+void UpdataBloodbags() {
+    //安全清理
+    vector<Bloodbag> temp;
+    for (auto& pb : g_pb)
+        if (pb.active)
+            temp.push_back(pb);
+    g_pb.swap(temp);
 }
 
 void UpdataBloodbags() {
@@ -1316,12 +1325,12 @@ void CheckLevelUp() {
 void Collide_Bloodbag() {
     if (g_bloodbag.empty())return;
     for (int i = 0; i < g_bloodbag.size(); i++) {
-        Bloodbag& bb = g_bloodbag[i];
+        Bloodbag &bb = g_bloodbag[i];
         if (!bb.active)continue;
         else if (g_player.x < bb.x + bb.w &&
-            g_player.x + g_player.w > bb.x &&
-            g_player.y < bb.y + bb.h &&
-            g_player.y + g_player.h > bb.y)
+             g_player.x + g_player.w > bb.x &&
+             g_player.y < bb.y + bb.h &&
+             g_player.y + g_player.h > bb.y)
         {
             //将bb从g_bloodbag移到g_pb中
             g_pb.push_back(bb);
@@ -1388,8 +1397,8 @@ void DrawGameUI() {
 
 void DrawPlayerInfo() {
 
-    putimage(0, 10, &g_res.imgAx);
-    putimage(0, 40, &g_res.imgGj);
+    putimagePNG(&g_res.imgAx,0, 10);
+    putimagePNG(&g_res.imgGj,0, 40);
     //设置字体大小和格式
     settextstyle(25, 0, "微软雅黑");
     setbkmode(TRANSPARENT);
