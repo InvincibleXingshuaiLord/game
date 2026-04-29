@@ -20,7 +20,7 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed����֡��ʵ���ٶ�
-#define PLAYER_SPEED     1
+#define PLAYER_SPEED     0.5
 #define BULLET_SPEED     2
 #define MONSTER_SPEED    0.5
 
@@ -231,7 +231,7 @@ std::vector<Monster> g_monsters;
 std::vector<Bloodbag>g_bloodbag;
 
 //���Ѫ��װ����
-std::vector<Bloodbag>g_pb;
+std::vector<Bloodbag>g_bloodbag;
 
 
 // ȫ����Դ���󣬹���������ͼ
@@ -491,7 +491,7 @@ void Player::LevelUp() {
     maxHp += 20;
     hp = maxHp;   //������������ֵ
     atk += 1;     //����������
-    moveSpeed += 1;//�ƶ��ٶ�����
+    moveSpeed += 0.15;//�ƶ��ٶ�����
     expNeed += EXP_PER_LEVEL * 1.2;//������һ�����辭��
 }
 
@@ -566,7 +566,7 @@ Monster::Monster() {
     h = 64;//ͬ��
     hp = 100;
     maxHp = 100;
-    speed = 2;
+    speed = MONSTER_SPEED;
     expDrop = 10;
     score = 10;
     active = true;
@@ -592,29 +592,35 @@ void Monster::RandomSpawn() {
 
 }
 
-void Monster::TrackPlayer(Player& player)
-{
-    // ������
+void Monster::TrackPlayer(Player& player){
+    // 计算朝向玩家的方向
     int dx = player.x + player.w / 2 - (x + w / 2);
     int dy = player.y + player.h / 2 - (y + h / 2);
+    double dist = sqrt((double)dx * (double)dx + (double)dy * (double)dy);
 
-    double dist = sqrt(dx * dx + dy * dy);
-    // ����ֹͣ����ֹ�鴤
-    if (dist < 8.0)
-        return;
+    // 距离过近时停止，防止抖动
+    if (dist < 8.0) return;
 
-    // ��׼������ + �����ƶ������ȶ�д����
-    double moveX = (dx / dist) * speed;
-    double moveY = (dy / dist) * speed;
+    // 基础移动方向（朝向玩家）
+    double moveX = ((double)dx / dist) * speed;
+    double moveY = ((double)dy / dist) * speed;
+
+    // 自由移动：叠加随机扰动，让怪物不会完全贴死玩家
+    double jitterX = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
+    double jitterY = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
+
+    moveX += jitterX;
+    moveY += jitterY;
 
     x += (int)round(moveX);
     y += (int)round(moveY);
 
-    // ���ƹ��ﲻ����Ļ�����׶ž����߽�鴤
+    // 屏幕边界限制
     if (x < 0) x = 0;
     if (y < 0) y = 0;
     if (x + w > WIN_WIDTH)  x = WIN_WIDTH - w;
     if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
+}
 }
 
 void Monster::ShootMonsterBullet(Player& player) {
@@ -687,6 +693,8 @@ Bloodbag::Bloodbag() {
 void Bloodbag::Init(double bx,double by,int bflag) {
     this->x = bx, this->y = by;
     this->active = true;
+    if (bflag == 0) { this->w = 12, this->h = 12; }
+    else { this->w = 18, this->h = 18; }
     this->flag = bflag;
 }
 
@@ -1177,6 +1185,7 @@ void GameUpdate()
     UpdateInvincible();
 
     // �����Ϸ�Ƿ������ʤ��/ʧ�ܣ�
+    UpdataBloodbags();
     CheckGameEnd();
 }
 
@@ -1265,10 +1274,10 @@ void UpdateMonsters() {
 void UpdataBloodbags() {
     //��ȫ����
     vector<Bloodbag> temp;
-    for (auto& pb : g_pb)
+    for (auto& pb : g_bloodbag)
         if (pb.active)
             temp.push_back(pb);
-    g_pb.swap(temp);
+    g_bloodbag.swap(temp);
 }
 
 void Collide_BulletMonster()
@@ -1309,7 +1318,7 @@ void Collide_PlayerMonster() {
             (g_player.y < m.y + m.h) && (g_player.y + g_player.h > m.y);
 
         if (collide) {
-            g_player.TakeDamage(10);
+        if (!g_player.isInvincible) { g_player.TakeDamage(10); }
         }
     }
 }
