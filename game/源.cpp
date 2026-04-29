@@ -24,7 +24,7 @@ ExMessage msg = { 0 };
 //speed，用帧率实现速度
 #define PLAYER_SPEED     1
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.2
+#define MONSTER_SPEED    0.02
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
@@ -115,8 +115,8 @@ public:
 class Monster
 {
 public:
-    int x;              //怪物X坐标
-    int y;              //怪物Y坐标
+    double x;              //怪物X坐标
+    double y;              //怪物Y坐标
     int w;              //怪物贴图宽度
     int h;              //怪物贴图高度
 
@@ -607,47 +607,45 @@ Monster::Monster() {
 }
 
 void Monster::RandomSpawn() {
-    int posx;
-    int posy;
-    int minx = 0;
-    int miny = 0;
-    int maxx = 1000;
-    int maxy = 700;
-    posx = rand() % (maxx - minx + 1) + minx;
-    posy = rand() % (maxy - miny + 1) + miny;
-    x = posx;
-    y = posy;
-
+    // 随机生成在屏幕边缘
+    int side = rand() % 4;
+    switch (side) {
+    case 0: // 左边
+        x = -w;
+        y = rand() % (WIN_HEIGHT - h);
+        break;
+    case 1: // 右边
+        x = WIN_WIDTH;
+        y = rand() % (WIN_HEIGHT - h);
+        break;
+    case 2: // 上边
+        x = rand() % (WIN_WIDTH - w);
+        y = -h;
+        break;
+    case 3: // 下边
+        x = rand() % (WIN_WIDTH - w);
+        y = WIN_HEIGHT;
+        break;
+    }
 }
 
 void Monster::TrackPlayer(Player& player)
 {
-    int dx = player.x + player.w / 2 - (x + w / 2);
-    int dy = player.y + player.h / 2 - (y + h / 2);
+    double dx = (player.x + player.w / 2.0) - (x + w / 2.0);
+    double dy = (player.y + player.h / 2.0) - (y + h / 2.0);
 
-    double dist = sqrt((double)dx * (double)dx + (double)dy * (double)dy);
-    // stop when very close
-    if (dist < 8.0)
-        return;
+    double dist = sqrt(dx * dx + dy * dy);
+    if (dist < 1.0) return;
 
-    // move toward player
-    double moveX = ((double)dx / dist) * speed;
-    double moveY = ((double)dy / dist) * speed;
+    // 移动
+    x += (dx / dist) * speed;
+    y += (dy / dist) * speed;
 
-    // add jitter for free movement
-    double jitterX = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
-    double jitterY = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
-    moveX += jitterX;
-    moveY += jitterY;
-
-    x += (int)round(moveX);
-    y += (int)round(moveY);
-
-    // keep inside screen
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-    if (x + w > WIN_WIDTH)  x = WIN_WIDTH - w;
-    if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
+    // 边界限制（改为 double 版本）
+    if (x < -w) x = -w;
+    if (y < -h) y = -h;
+    if (x > WIN_WIDTH) x = WIN_WIDTH;
+    if (y > WIN_HEIGHT) y = WIN_HEIGHT;
 }
 
 
