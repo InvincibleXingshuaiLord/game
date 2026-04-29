@@ -24,7 +24,7 @@ ExMessage msg = { 0 };
 //speed，用帧率实现速度
 #define PLAYER_SPEED     0.5
 #define BULLET_SPEED     2
-#define MONSTER_SPEED    0.5
+#define MONSTER_SPEED    0.2
 
 //升级所需经验值
 #define EXP_PER_LEVEL    20
