@@ -234,9 +234,6 @@ std::vector<Monster> g_monsters;
 //全局血包列表，管理所有血包
 std::vector<Bloodbag>g_bloodbag;
 
-//玩家血包装备栏
-std::vector<Bloodbag>g_pb;
-
 
 // 全局资源对象，管理所有贴图
 GameRes    g_res;
@@ -677,26 +674,23 @@ void Monster::OnDead(Player& player) {
     active = false;
     player.exp += expDrop;
     player.score += score;
+    Probability(*this);
 }
 //静行结束
 
 void Probability(Monster& monster) {
+    Bloodbag bloodbag;
     if (monster.type == MONSTER)//小怪
     {
-        Bloodbag bloodbag;
-        //5%概率掉血包和经验包
+        //5%概率掉血包
         if (rand() % 20 == 0) {
             //生成小血包
             bloodbag.Init(monster.x, monster.y, 0);
             g_bloodbag.push_back(bloodbag);
-            //生成经验包
-
-
         }
     }
     else if (monster.type == MINI_BOSS) //小boss
     {
-        Bloodbag bloodbag;
         //90%概率掉小血包,10%概率掉大血包
         if (rand() % 10 != 0) {
             bloodbag.Init(monster.x, monster.y, 0);//小血包
@@ -1470,14 +1464,6 @@ void UpdateMonsters() {
     }
 }
 
-void UpdataBloodbags() {
-    //安全清理
-    vector<Bloodbag> temp;
-    for (auto& pb : g_bloodbag)
-        if (pb.active)
-            temp.push_back(pb);
-    g_bloodbag.swap(temp);
-}
 
 void Collide_BulletMonster()
 {
@@ -1529,6 +1515,7 @@ void CheckLevelUp() {
     }
 }
 
+//血包碰撞检测
 void Collide_Bloodbag() {
     if (g_bloodbag.empty())return;
     for (int i = 0; i < g_bloodbag.size(); i++) {
@@ -1539,11 +1526,15 @@ void Collide_Bloodbag() {
             g_player.y < bb.y + bb.h &&
             g_player.y + g_player.h > bb.y)
         {
-            //将bb从g_bloodbag移到g_pb中
-            g_pb.push_back(bb);
-            g_bloodbag.erase(g_bloodbag.begin() + i);
+            bb.Recover();
+            bb.active = false;
         }
     }
+    vector<Bloodbag> temp;
+    for (auto& pb : g_bloodbag)
+        if (pb.active)
+            temp.push_back(pb);
+    g_bloodbag.swap(temp);
 }
 
 void UpdateInvincible() {
