@@ -22,7 +22,7 @@ ExMessage msg = { 0 };
 #define PLAYER_INIT_HP   100
 #define PLAYER_INIT_ATK  1
 //speed，用帧率实现速度
-#define PLAYER_SPEED     1
+#define PLAYER_SPEED     0.5
 #define BULLET_SPEED     2
 #define MONSTER_SPEED    0.5
 
@@ -522,7 +522,7 @@ void Player::LevelUp() {
     maxHp += 20;
     hp = maxHp;   //升级回满生命值
     atk += 1;     //攻击力提升
-    moveSpeed += 1;//移动速度提升
+    moveSpeed += 0.15;//移动速度提升
     expNeed += EXP_PER_LEVEL * 1.2;//提升下一级所需经验
     mciSendString("stop music\\升级.wav", NULL, 0, NULL); // 停止旧音效
     mciSendString("play music\\升级.wav", NULL, 0, NULL);
@@ -599,7 +599,7 @@ Monster::Monster() {
     h = 64;//同上
     hp = 100;
     maxHp = 100;
-    speed = 2;
+    speed = MONSTER_SPEED;
     expDrop = 10;
     score = 10;
     active = true;
@@ -622,28 +622,34 @@ void Monster::RandomSpawn() {
 
 void Monster::TrackPlayer(Player& player)
 {
-    // 向量差
     int dx = player.x + player.w / 2 - (x + w / 2);
     int dy = player.y + player.h / 2 - (y + h / 2);
 
-    double dist = sqrt(dx * dx + dy * dy);
-    // 贴脸停止，防止抽搐
+    double dist = sqrt((double)dx * (double)dx + (double)dy * (double)dy);
+    // stop when very close
     if (dist < 8.0)
         return;
 
-    // 标准化方向 + 匀速移动（最稳定写法）
-    double moveX = (dx / dist) * speed;
-    double moveY = (dy / dist) * speed;
+    // move toward player
+    double moveX = ((double)dx / dist) * speed;
+    double moveY = ((double)dy / dist) * speed;
+
+    // add jitter for free movement
+    double jitterX = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
+    double jitterY = ((rand() % 100) / 100.0 - 0.5) * speed * 0.4;
+    moveX += jitterX;
+    moveY += jitterY;
 
     x += (int)round(moveX);
     y += (int)round(moveY);
 
-    // 限制怪物不出屏幕，彻底杜绝卡边界抽搐
+    // keep inside screen
     if (x < 0) x = 0;
     if (y < 0) y = 0;
     if (x + w > WIN_WIDTH)  x = WIN_WIDTH - w;
     if (y + h > WIN_HEIGHT) y = WIN_HEIGHT - h;
 }
+
 
 void Monster::ShootMonsterBullet(Player& player) {
     if (!active) return;
@@ -1458,10 +1464,10 @@ void UpdateMonsters() {
 void UpdataBloodbags() {
     //安全清理
     vector<Bloodbag> temp;
-    for (auto& pb : g_pb)
+    for (auto& pb : g_bloodbag)
         if (pb.active)
             temp.push_back(pb);
-    g_pb.swap(temp);
+    g_bloodbag.swap(temp);
 }
 
 void Collide_BulletMonster()
