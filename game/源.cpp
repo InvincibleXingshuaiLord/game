@@ -1436,7 +1436,7 @@ void UpdateBullets()
     }
 
     // 安全清理
-    vector<Bullet> temp;
+     vector<Bullet> temp;
     for (auto& b : g_bullets)
         if (b.active)
             temp.push_back(b);
