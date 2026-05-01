@@ -185,6 +185,8 @@ public:
     IMAGE bgLose;           //失败界面
     IMAGE imgAx;      // 游戏界面玩家血量图标
     IMAGE imgGj;      // 游戏界面玩家攻击力图标
+    IMAGE imgBloodbagSmall;  //小血包图片
+    IMAGE imgBloodbagBig;    //大血包图片
 public:
     void Load();     //加载所有图片
     void Free();     //释放图片
@@ -706,8 +708,8 @@ void Probability(Monster& monster) {
 Bloodbag::Bloodbag() {
     this->x = 0;
     this->y = 0;
-    this->w = 10;
-    this->h = 10;
+    this->w = 30;  // 小血包宽度
+    this->h = 30;  // 小血包高度
     this->flag = 0;
     this->active = false;
 }
@@ -716,19 +718,30 @@ void Bloodbag::Init(double bx, double by, int bflag) {
     this->x = bx, this->y = by;
     this->active = true;
     this->flag = bflag;
+
+    // 根据类型设置不同大小
+    if (bflag == 0) {  // 小血包
+        this->w = 30;
+        this->h = 30;
+    }
+    else {           // 大血包
+        this->w = 40;
+        this->h = 40;
+    }
 }
 
 void Bloodbag::Recover() {
     if (this->flag == 0) {              //小血包
         g_player.hp += g_player.maxHp * 0.3;
+        if (g_player.hp > g_player.maxHp) g_player.hp = g_player.maxHp;
     }
     else {                              //大血包
         g_player.hp += g_player.maxHp * 0.6;
         g_player.maxHp += 10;
+        if (g_player.hp > g_player.maxHp) g_player.hp = g_player.maxHp;
     }
     this->active = false;
 }
-
 void GameRes::Load() {
     //
 
@@ -747,7 +760,8 @@ void GameRes::Load() {
     loadimage(&this->bgLose, "photo/sb1.jpg", 1000, 800);
     loadimage(&this->imgAx, "photo/ax1.png", 25, 25);
     loadimage(&this->imgGj, "photo/gj2.png", 25, 25);
-
+    loadimage(&this->imgBloodbagSmall, "photo/bloodbag_small.png", 30, 30);
+    loadimage(&this->imgBloodbagBig, "photo/bloodbag_big.png", 40, 40);
 }
 
 void GameRes::Free() {
@@ -1373,6 +1387,9 @@ void GameUpdate()
     // 玩家与怪物的碰撞检测
     Collide_PlayerMonster();
 
+	// 玩家与血包的碰撞检测
+	Collide_Bloodbag();
+
     // 检测玩家是否升级
     CheckLevelUp();
 
@@ -1385,49 +1402,53 @@ void GameUpdate()
 
 void SpawnMonster() {
     Monster monster;
-    monster.RandomSpawn();         // 随机位置和尺寸
+    monster.RandomSpawn();
     monster.type = MONSTER;
     monster.active = true;
 
-    monster.maxHp = 5 + 5 * g_player.level;             // 血量5点
+    // 血量 = 10 + 等级 × 1.5，向上取整
+    monster.maxHp = 10 + (int)(g_player.level * 1.5);
     monster.hp = monster.maxHp;
     monster.speed = MONSTER_SPEED;
-    monster.expDrop = 5;           // 掉落经验
-    monster.score = 10;            // 击杀得分
+    monster.expDrop = 10;           // 固定10经验
+    monster.score = 10;             // 固定10分
 
     g_monsters.push_back(monster);
 }
 
 void SpawnMiniBoss() {
     Monster miniBoss;
-    miniBoss.RandomSpawn();        // 随机位置和尺寸
+    miniBoss.RandomSpawn();
     miniBoss.type = MINI_BOSS;
     miniBoss.active = true;
 
-    miniBoss.maxHp = 200;          // 血量200点
+    // 小BOSS血量 = 80 + 等级 × 2
+    miniBoss.maxHp = 80 + g_player.level * 2;
     miniBoss.hp = miniBoss.maxHp;
-    miniBoss.speed = MONSTER_SPEED;
-    miniBoss.expDrop = 50;         // 掉落经验
-    miniBoss.score = 200;          // 击杀得分
+    miniBoss.speed = MONSTER_SPEED * 0.7;
+    miniBoss.expDrop = 50;
+    miniBoss.score = 200;
+
     g_monsters.push_back(miniBoss);
 }
 
 void SpawnFinalBoss() {
     Monster finalBoss;
-    finalBoss.RandomSpawn();       // 随机位置和尺寸
+    finalBoss.RandomSpawn();
     finalBoss.type = FINAL_BOSS;
     finalBoss.active = true;
 
-    finalBoss.maxHp = 913;         // 血量913点
+    // 大BOSS血量300，攻击模式靠子弹
+    finalBoss.maxHp = 300;
     finalBoss.hp = finalBoss.maxHp;
-    finalBoss.speed = MONSTER_SPEED;
-    finalBoss.expDrop = 500;       // 掉落经验
-    finalBoss.score = 1000;        // 击杀得分
+    finalBoss.speed = MONSTER_SPEED * 0.4;
+    finalBoss.expDrop = 200;
+    finalBoss.score = 1000;
+
     g_monsters.push_back(finalBoss);
     g_hasFinalBoss = true;
     FinalBossCount++;
 }
-
 void UpdateBullets()
 {
     for (int i = 0; i < g_bullets.size(); i++)
@@ -1708,7 +1729,7 @@ void DrawEntities()
             imgToDraw = &g_res.imgMonster;
             break;
         }
-
+       
         // 绘制怪物贴图
         putimagePNG(imgToDraw, monster.x, monster.y,
             0, 0,
@@ -1718,6 +1739,21 @@ void DrawEntities()
         // 绘制血条
         DrawMonsterHPBar(monster);
     }
+    // 4. 绘制血包
+    for (int i = 0; i < (int)g_bloodbag.size(); i++)
+    {
+        Bloodbag& bag = g_bloodbag[i];
+        if (!bag.active) continue;
+
+        IMAGE* bloodImg = nullptr;
+        if (bag.flag == 0)  // 小血包
+            bloodImg = &g_res.imgBloodbagSmall;
+        else                 // 大血包
+            bloodImg = &g_res.imgBloodbagBig;
+
+        putimagePNG(bloodImg, (int)bag.x, (int)bag.y);
+    }
+
 }
 //绘制一帧逻辑
 // void test() {
